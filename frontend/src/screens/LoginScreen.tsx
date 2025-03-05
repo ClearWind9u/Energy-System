@@ -10,7 +10,7 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) { // ✅ Nhận navigation từ Stack.Navigator
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -74,9 +74,11 @@ export default function LoginScreen() {
       </View>
 
       {/* Đăng ký tài khoản */}
-      <Text style={styles.signupText}>
-        Bạn chưa có tài khoản? <Text style={styles.signupLink}>Đăng ký ngay</Text>
-      </Text>
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>  
+        <Text style={styles.signupText}>
+          Bạn chưa có tài khoản? <Text style={styles.signupLink}>Đăng ký ngay</Text>
+        </Text>
+      </TouchableOpacity>
 
       <StatusBar style="auto" />
     </View>
