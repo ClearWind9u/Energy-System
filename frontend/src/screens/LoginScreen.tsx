@@ -17,9 +17,8 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Hình ảnh đầu trang */}
       <Image
-        source={require("../../assets/login-illustration.png")} // Thay hình ảnh của bạn ở đây
+        source={require("../../assets/login-illustration.png")}
         style={styles.image}
       />
 

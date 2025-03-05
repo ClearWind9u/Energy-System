@@ -1,8 +1,7 @@
 {
   "name": "learn-react-native-hoidanit",
   "author": {
-    "name": "Hỏi Dân IT",
-    "url": "https://hoidanit.vn"
+    "name": "Đồ Án Đa Ngành"
   },
   "version": "1.0.0",
   "main": "index.js",
@@ -17,20 +16,20 @@
     "@react-navigation/native": "^7.0.15",
     "@react-navigation/stack": "^7.1.2",
     "babel-plugin-module-resolver": "^5.0.2",
-    "expo": "^51.0.39",
-    "expo-status-bar": "1.12.1",
-    "react": "18.2.0",
-    "react-native": "0.74.5",
-    "react-native-gesture-handler": "^2.24.0",
+    "expo": "^52.0.37",
+    "expo-status-bar": "^2.0.1", 
+    "react": "18.3.1", 
+    "react-native": "0.76.7", 
+    "react-native-gesture-handler": "~2.20.2", 
     "react-native-paper": "^5.13.1",
-    "react-native-reanimated": "^3.17.1",
-    "react-native-safe-area-context": "^5.3.0",
-    "react-native-screens": "^4.9.1",
+    "react-native-reanimated": "~3.16.1", 
+    "react-native-safe-area-context": "4.12.0", 
+    "react-native-screens": "~4.4.0",  
     "react-native-vector-icons": "^10.2.0"
   },
   "devDependencies": {
-    "@babel/core": "7.24.8",
-    "@types/react": "18.2.79",
+    "@babel/core": "^7.25.2",  
+    "@types/react": "~18.3.12", 
     "typescript": "5.3.3"
   },
   "private": true
