@@ -206,7 +206,7 @@ const nightModeStyles = StyleSheet.create({
     backgroundColor: "#444",
   },
   bottomNav: {
-    backgroundColor: "white",
+    backgroundColor: "#333",
   },
 });
 

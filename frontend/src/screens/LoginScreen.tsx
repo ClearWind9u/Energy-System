@@ -10,21 +10,30 @@ import {
 import { StatusBar } from "expo-status-bar";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 
-export default function LoginScreen({ navigation }) { // ✅ Nhận navigation từ Stack.Navigator
+export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const fakeUser = {
+    email: "test@gmail.com",
+    password: "123456",
+  };
+
+  // Xử lý đăng nhập
+  const handleLogin = () => {
+    if (email === fakeUser.email && password === fakeUser.password) {
+      navigation.navigate("Home");
+    } else {
+      alert("Email hoặc mật khẩu không đúng!");
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Image
-        source={require("../../assets/login-illustration.png")}
-        style={styles.image}
-      />
+      <Image source={require("../../assets/login-illustration.png")} style={styles.image} />
+      <Text style={styles.title}>Đăng nhập</Text>
 
-      <Text style={styles.title}>Đăng nhập bình thường</Text>
-
-      {/* Ô nhập Email */}
       <View style={styles.inputContainer}>
         <MaterialIcons name="person-outline" size={24} color="#666" />
         <TextInput
@@ -35,7 +44,6 @@ export default function LoginScreen({ navigation }) { // ✅ Nhận navigation t
         />
       </View>
 
-      {/* Ô nhập mật khẩu */}
       <View style={styles.inputContainer}>
         <MaterialIcons name="lock-outline" size={24} color="#666" />
         <TextInput
@@ -46,22 +54,12 @@ export default function LoginScreen({ navigation }) { // ✅ Nhận navigation t
           onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <MaterialIcons
-            name={showPassword ? "visibility" : "visibility-off"}
-            size={24}
-            color="#666"
-          />
+          <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={24} color="#666" />
         </TouchableOpacity>
       </View>
 
-      {/* Quên mật khẩu */}
-      <TouchableOpacity style={styles.forgotPassword}>
-        <Text style={styles.forgotPasswordText}>Quên mật khẩu?</Text>
-      </TouchableOpacity>
-
-      {/* Nút đăng nhập */}
-      <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Home")}>
-      <Text style={styles.loginButtonText}>Đăng nhập</Text>
+      <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
+        <Text style={styles.loginButtonText}>Đăng nhập</Text>
       </TouchableOpacity>
 
 
@@ -74,8 +72,7 @@ export default function LoginScreen({ navigation }) { // ✅ Nhận navigation t
         <FontAwesome name="linkedin" size={32} color="#0077B5" />
       </View>
 
-      {/* Đăng ký tài khoản */}
-      <TouchableOpacity onPress={() => navigation.navigate("Register")}>  
+      <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.signupText}>
           Bạn chưa có tài khoản? <Text style={styles.signupLink}>Đăng ký ngay</Text>
         </Text>
