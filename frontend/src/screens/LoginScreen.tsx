@@ -22,7 +22,7 @@ export default function LoginScreen({ navigation }) { // ✅ Nhận navigation t
         style={styles.image}
       />
 
-      <Text style={styles.title}>Đăng nhập</Text>
+      <Text style={styles.title}>Đăng nhập bình thường</Text>
 
       {/* Ô nhập Email */}
       <View style={styles.inputContainer}>
@@ -60,9 +60,10 @@ export default function LoginScreen({ navigation }) { // ✅ Nhận navigation t
       </TouchableOpacity>
 
       {/* Nút đăng nhập */}
-      <TouchableOpacity style={styles.loginButton}>
-        <Text style={styles.loginButtonText}>Đăng nhập</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Home")}>
+      <Text style={styles.loginButtonText}>Đăng nhập</Text>
       </TouchableOpacity>
+
 
       {/* Đăng nhập bằng mạng xã hội */}
       <Text style={styles.orText}>hoặc đăng nhập với</Text>
