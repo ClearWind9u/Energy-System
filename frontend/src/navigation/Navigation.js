@@ -4,7 +4,7 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import HomeScreen from "../screens/HomeScreen";
 import AdjustComsumption from "../screens/AdjustComsumtion";
-
+import { useState } from "react";
 const Stack = createStackNavigator();
 
 export default function AppNavigator() {
@@ -15,7 +15,6 @@ export default function AppNavigator() {
         <Stack.Screen name="Register" component={RegisterScreen} />
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="Adjust" component={AdjustComsumption} />
-
       </Stack.Navigator>
     </NavigationContainer>
   );

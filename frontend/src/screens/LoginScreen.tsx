@@ -9,29 +9,41 @@ import {
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-
+import axios from "axios";
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const fakeUser = {
-    email: "test@gmail.com",
-    password: "123456",
-  };
-
   // Xử lý đăng nhập
-  const handleLogin = () => {
-    if (email === fakeUser.email && password === fakeUser.password) {
-      navigation.navigate("Home");
-    } else {
-      alert("Email hoặc mật khẩu không đúng!");
+  const handleLogin = async () => {
+    let data = {
+      account: email,
+      password: password,
+    };
+    const apiURL = "http://192.168.176.9:3000/api/login";
+    try {
+      const response = await axios.post(apiURL, data);
+      if (response.data.errCode != 0) {
+        alert(response.data.errMessage);
+      } else {
+        alert(
+          response.data.errMessage + " with ID user: " + response.data.idUser
+        );
+        navigation.navigate("Home", {
+          userID: response.data.idUser,
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/login-illustration.png")} style={styles.image} />
+      <Image
+        source={require("../../assets/login-illustration.png")}
+        style={styles.image}
+      />
       <Text style={styles.title}>Đăng nhập</Text>
 
       <View style={styles.inputContainer}>
@@ -54,14 +66,17 @@ export default function LoginScreen({ navigation }) {
           onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={24} color="#666" />
+          <MaterialIcons
+            name={showPassword ? "visibility" : "visibility-off"}
+            size={24}
+            color="#666"
+          />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
         <Text style={styles.loginButtonText}>Đăng nhập</Text>
       </TouchableOpacity>
-
 
       {/* Đăng nhập bằng mạng xã hội */}
       <Text style={styles.orText}>hoặc đăng nhập với</Text>
@@ -74,7 +89,8 @@ export default function LoginScreen({ navigation }) {
 
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.signupText}>
-          Bạn chưa có tài khoản? <Text style={styles.signupLink}>Đăng ký ngay</Text>
+          Bạn chưa có tài khoản?{" "}
+          <Text style={styles.signupLink}>Đăng ký ngay</Text>
         </Text>
       </TouchableOpacity>
 

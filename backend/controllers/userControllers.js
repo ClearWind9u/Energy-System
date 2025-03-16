@@ -63,19 +63,26 @@ exports.handleLogin = (req, res) => {
   let message = {
     errCode: 0,
     errMessage: "Login successfully",
+    idUser: null,
   };
-  sql = "SELECT account,password FROM user WHERE account = ?";
+  sql = "SELECT id,account,password FROM user WHERE account = ?";
   db.query(sql, values, function (err, results) {
     if (err) throw err;
     let output = results[0];
     if (output) {
       let check = bcrypt.compareSync(body.password, output.password);
       if (check) {
+        message = {
+          errCode: 0,
+          errMessage: "Login successfully",
+          idUser: output.id,
+        };
         return res.status(200).json(message);
       } else {
         message = {
           errCode: 1,
           errMessage: "Wrong password",
+          idUser: null,
         };
         return res.status(200).json(message);
       }
@@ -83,6 +90,7 @@ exports.handleLogin = (req, res) => {
       message = {
         errCode: 1,
         errMessage: "Username does not exist",
+        idUser: null,
       };
       return res.status(200).json(message);
     }
