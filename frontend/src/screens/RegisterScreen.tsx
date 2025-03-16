@@ -7,20 +7,43 @@ import {
   StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-
+import axios from "axios";
 export default function RegisterScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [idGroup, setIdGroup] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
+  const handleRegister = async () => {
+    if (password != confirmPassword) {
+      alert("Xác nhận mật khẩu không đúng! Vui lòng xác nhận lại");
+      return;
+    }
+    let data = {
+      account: email,
+      password: password,
+      name: fullName,
+      id_group: idGroup,
+    };
+    const apiURL = "http://192.168.176.9:3000/api/create-user";
+    try {
+      const response = await axios.post(apiURL, data);
+      if (response.data.errCode != 0) {
+        alert(response.data.errMessage);
+      } else navigation.navigate("Login");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View style={styles.container}>
       {/* Nút quay lại */}
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
         <MaterialIcons name="arrow-back" size={24} color="#000" />
         <Text style={styles.backText}>Trở lại</Text>
       </TouchableOpacity>
@@ -43,10 +66,10 @@ export default function RegisterScreen({ navigation }) {
         <MaterialIcons name="phone" size={24} color="#666" />
         <TextInput
           style={styles.input}
-          placeholder="Số điện thoại"
+          placeholder="ID cụm"
           keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
+          value={idGroup}
+          onChangeText={setIdGroup}
         />
       </View>
 
@@ -91,7 +114,9 @@ export default function RegisterScreen({ navigation }) {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
         />
-        <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+        <TouchableOpacity
+          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+        >
           <MaterialIcons
             name={showConfirmPassword ? "visibility" : "visibility-off"}
             size={24}
@@ -101,14 +126,15 @@ export default function RegisterScreen({ navigation }) {
       </View>
 
       {/* Nút Đăng ký */}
-      <TouchableOpacity style={styles.registerButton}>
+      <TouchableOpacity onPress={handleRegister} style={styles.registerButton}>
         <Text style={styles.registerButtonText}>Đăng ký</Text>
       </TouchableOpacity>
 
       {/* Điều hướng đến màn hình Đăng nhập */}
       <TouchableOpacity onPress={() => navigation.navigate("Login")}>
         <Text style={styles.loginText}>
-            Bạn đã có tài khoản? <Text style={styles.loginLink}>Đăng nhập ngay</Text>
+          Bạn đã có tài khoản?{" "}
+          <Text style={styles.loginLink}>Đăng nhập ngay</Text>
         </Text>
       </TouchableOpacity>
     </View>
