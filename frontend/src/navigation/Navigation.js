@@ -6,6 +6,7 @@ import HomeScreen from "../screens/HomeScreen";
 import AdjustComsumption from "../screens/AdjustComsumtion";
 import DeviceSrceen from "../screens/DeviceScreen";
 import DetailedSpecification from "../screens/DetailedSpecification";
+import DeviceManagement from "../screens/DeviceManagement";
 import { ThemeProvider } from "./ThemeContext";
 
 const Stack = createStackNavigator();
@@ -21,7 +22,7 @@ export default function AppNavigator() {
         <Stack.Screen name="Adjust" component={AdjustComsumption} />
         <Stack.Screen name="device" component={DeviceSrceen} />
         <Stack.Screen name="Detail" component={DetailedSpecification} />
-
+        <Stack.Screen name="DeviceManagement" component={DeviceManagement} />
       </Stack.Navigator>
     </NavigationContainer>
     </ThemeProvider>

@@ -9,10 +9,10 @@ import {
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 
-export default function HomeScreen({navigation, route}) {
+export default function HomeScreen({ navigation, route }) {
 
 
-  const {isDayMode, setIsDayMode} = useTheme();
+  const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const { userID } = route.params;
   return (
@@ -58,7 +58,7 @@ export default function HomeScreen({navigation, route}) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]}  onPress={() => navigation.navigate("Detail")}    >
+        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]} onPress={() => navigation.navigate("Detail")}    >
           <FontAwesome name="eye" size={24} color="black" />TE
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
@@ -71,7 +71,10 @@ export default function HomeScreen({navigation, route}) {
           <Text style={[styles.cardText]}>Điều chỉnh mức tiêu thụ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#708DFF" }]}>
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: "#708DFF" }]}
+          onPress={() => navigation.navigate("DeviceManagement")}
+        >
           <FontAwesome name="tablet" size={24} color="black" />
           <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
         </TouchableOpacity>
@@ -101,7 +104,7 @@ export default function HomeScreen({navigation, route}) {
           <MaterialCommunityIcons name="account" size={24} color="white" />
         </TouchableOpacity>
       </View>
-    </View>
+    </View >
   );
 }
 
@@ -118,13 +121,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  backButton: { 
-    padding: 10, 
+  backButton: {
+    padding: 10,
     // position: "absolute", 
-    left: 0 
+    left: 0
   },
   title: {
-    paddingLeft:5,
+    paddingLeft: 5,
     // position: "absolute", 
     fontSize: 24,
     fontWeight: "bold",
