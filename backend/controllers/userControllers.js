@@ -1,10 +1,10 @@
 const db = require('../database/db');
 let bcrypt = require("bcryptjs");
 let salt = bcrypt.genSaltSync(10);
-db.connect((err) => {
-  if (err) throw err;
-  console.log("Database connected");
-});
+// db.connect((err) => {
+//   if (err) throw err;
+//   console.log("Database connected");
+// });
 // Lấy danh sách người dùng
 exports.getUsers = async (req, res) => {
   try {

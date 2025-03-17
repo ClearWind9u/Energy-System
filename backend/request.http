@@ -1,0 +1,9 @@
+
+POST http://localhost:3000/device/addDevice
+Content-Type: application/json
+
+{
+    "device_id": 11,
+    "device_name": "abc",
+    "id_group" : 1
+}
