@@ -7,11 +7,12 @@ import {
   StyleSheet,
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "../navigation/ThemeContext";
 
 export default function HomeScreen({navigation}) {
 
 
-  const [isDayMode, setIsDayMode] = useState(true);
+  const {isDayMode, setIsDayMode} = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
 
   return (
@@ -35,7 +36,7 @@ export default function HomeScreen({navigation}) {
         <Text style={[styles.modeText, currentStyles.text]}>{isDayMode? "Chế độ ban ngày" : "Chế độ ban đêm"}</Text>
         <Switch
           value={isDayMode}
-          onValueChange={(value) => setIsDayMode(value)}
+          onValueChange={() => setIsDayMode(!isDayMode)}
           trackColor={{ false: "#ccc", true: "#4cd964" }}
           thumbColor="white"
         />
@@ -43,7 +44,7 @@ export default function HomeScreen({navigation}) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]}  onPress={() => navigation.navigate("Detail")}    >
           <FontAwesome name="eye" size={24} color="black" />TE
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
@@ -160,7 +161,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     marginTop: 5,
-  },
+  }
 });
 
 const dayModeStyles = StyleSheet.create({

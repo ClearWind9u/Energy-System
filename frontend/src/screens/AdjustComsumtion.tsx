@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { View, Text, Switch, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { useTheme } from "../navigation/ThemeContext";
 
 export default function AdjustComsumption({navigation}){
 
-    const [isDayMode, setIsDayMode] = useState(true);
+    const {isDayMode, setIsDayMode} = useTheme();
     const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
     const [devices, setDevices] = useState([
         {id: 1, name:"TV", isOn: true, icon:"tv", count: 1 },
@@ -53,13 +53,14 @@ export default function AdjustComsumption({navigation}){
               <TouchableOpacity
                 key={device.id}
                 style={[styles.deviceCard, currentStyles.deviceCard]}
-                onPress={() => toggleDevice(device.id)}
+                 onPress={() => navigation.navigate("device")}
               >
                 <FontAwesome
                   name={device.icon}
                   size={24}
                   color={isDayMode? "black" : "white"}
                   style={styles.deviceIcon}
+                  onPress={() => toggleDevice(device.id)}
                 />
                 <Text style={[styles.deviceName, currentStyles.text]}>{device.name}</Text>
                 <Text style={[styles.deviceCount, currentStyles.text]}>{device.count} Thiết bị</Text>
