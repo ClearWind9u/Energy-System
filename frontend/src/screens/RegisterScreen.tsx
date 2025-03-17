@@ -28,7 +28,7 @@ export default function RegisterScreen({ navigation }) {
       name: fullName,
       id_group: idGroup,
     };
-    const apiURL = `http://${Config.LOCALHOST}/api/create-user`;
+    const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/create-user`;
     try {
       const response = await axios.post(apiURL, data);
       if (response.data.errCode != 0) {

@@ -1,6 +1,5 @@
 const db = require('../database/db')
 
-
 //lay danh sach thiet bi
 exports.getAllDevices = async (req,res) => {
  try {
