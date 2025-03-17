@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
-const manageDeviceRouter = require('./routes/manageDeviceController')
+const manageDeviceRouter = require('./routes/manageDeviceRoutes')
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
