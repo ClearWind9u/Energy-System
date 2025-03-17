@@ -9,31 +9,45 @@ import {
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 
-export default function HomeScreen({navigation}) {
+export default function HomeScreen({navigation, route}) {
 
 
   const {isDayMode, setIsDayMode} = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-
+  const { userID } = route.params;
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-
-      <TouchableOpacity style={styles.backButton} onPress={() => navigation.navigate("Login")}>
-          <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate("Login")}
+        >
+          <FontAwesome
+            name="arrow-left"
+            size={24}
+            color={currentStyles.text.color}
+          />
         </TouchableOpacity>
 
-        <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
-        <TouchableOpacity style={styles.iconButton} > 
-          <FontAwesome name="bell" size={24} color={currentStyles.text.color}/>
+        <Text style={[styles.title, currentStyles.text]}>
+          Trang chủ của ID {userID}
+        </Text>
+        <TouchableOpacity style={styles.iconButton}>
+          <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
 
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-        <FontAwesome name="sun-o" size={24} color={isDayMode? "black" : "white"} />
-        <Text style={[styles.modeText, currentStyles.text]}>{isDayMode? "Chế độ ban ngày" : "Chế độ ban đêm"}</Text>
+        <FontAwesome
+          name="sun-o"
+          size={24}
+          color={isDayMode ? "black" : "white"}
+        />
+        <Text style={[styles.modeText, currentStyles.text]}>
+          {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
+        </Text>
         <Switch
           value={isDayMode}
           onValueChange={() => setIsDayMode(!isDayMode)}
@@ -49,7 +63,10 @@ export default function HomeScreen({navigation}) {
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#A4FF80" }]} onPress={ () => navigation.navigate("Adjust")}    >
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: "#A4FF80" }]}
+          onPress={() => navigation.navigate("Adjust")}
+        >
           <FontAwesome name="cog" size={24} color="black" />
           <Text style={[styles.cardText]}>Điều chỉnh mức tiêu thụ</Text>
         </TouchableOpacity>
@@ -59,7 +76,7 @@ export default function HomeScreen({navigation}) {
           <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FFE970" }]} >
+        <TouchableOpacity style={[styles.card, { backgroundColor: "#FFE970" }]}>
           <FontAwesome name="line-chart" size={24} color="black" />
           <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
         </TouchableOpacity>
@@ -68,7 +85,11 @@ export default function HomeScreen({navigation}) {
       {/* Thanh điều hướng */}
       <View style={[styles.bottomNav, currentStyles.bottomNav]}>
         <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
+          <MaterialCommunityIcons
+            name="view-dashboard"
+            size={24}
+            color="white"
+          />
           <Text style={styles.navText}>Bảng điều khiển</Text>
         </TouchableOpacity>
 

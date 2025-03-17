@@ -30,7 +30,7 @@
   npm install
 ```
 
-### 4️⃣ Cấu hình môi trường (`backend/.env`):
+### 4️⃣ Cấu hình môi trường (`backend/.env` và `frontend/.env`):
 Tạo file `.env` trong thư mục `backend` và thêm thông tin cấu hình MySQL:
 ```
 PORT=5000
@@ -39,6 +39,11 @@ DB_PORT=<your-mysql-port>
 DB_USER=<your-mysql-user>
 DB_PASSWORD=<your-mysql-password>
 DB_NAME=<your-database-name>
+```
+
+Tạo file `.env` trong thư mục `frontend` và thêm thông tin cấu hình IP kết nối (bên dưới mã QR):
+```
+EXPO_PUBLIC_LOCALHOST=<your-ip>
 ```
 
 ### 5️⃣ Chạy Backend:
@@ -59,8 +64,8 @@ DB_NAME=<your-database-name>
 ## 🧑‍💻 Fake User để đăng nhập
 Dưới đây là tài khoản giả lập để thử nghiệm đăng nhập:
 ```
-Email: test@gmail.com
-Mật khẩu: 123456
+Email: binh
+Mật khẩu: 123
 ```
 
 ## 📂 Cấu trúc thư mục

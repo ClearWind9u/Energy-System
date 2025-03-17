@@ -1,0 +1,19 @@
+
+GET http://localhost:3000/device
+
+POST http://localhost:3000/device/addDevice
+Content-Type: application/json
+
+{
+    "device_id": 11,
+    "device_name": "abc",
+    "id_group" : 1
+}
+###
+POST http://localhost:3000/device/editDevice
+Content-Type: application/json
+
+{
+    "device_id": 11,
+    "device_new_name": "aassad"
+}

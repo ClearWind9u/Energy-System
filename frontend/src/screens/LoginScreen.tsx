@@ -1,46 +1,60 @@
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  StyleSheet,
+  View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState("");
+  const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
-  const fakeUser = {
-    email: "test@gmail.com",
-    password: "123456",
-  };
-
   // Xử lý đăng nhập
-  const handleLogin = () => {
-    if (email === fakeUser.email && password === fakeUser.password) {
-      navigation.navigate("Home");
-    } else {
-      alert("Email hoặc mật khẩu không đúng!");
+  const handleLogin = async () => {
+    let data = {
+      account: account,
+      password: password,
+    };
+    // console.log("LOCALHOST: ", process.env.EXPO_PUBLIC_LOCALHOST);
+    const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/login`;
+    try {
+      const response = await axios.post(apiURL, data);
+      if (response.data.errCode != 0) {
+        alert(response.data.errMessage);
+      } else {
+        alert(
+          response.data.errMessage + " with ID user: " + response.data.idUser
+        );
+        navigation.navigate("Home", {
+          userID: response.data.idUser,
+        });
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Image source={require("../../assets/login-illustration.png")} style={styles.image} />
+      <Image
+        source={require("../../assets/login-illustration.png")}
+        style={styles.image}
+      />
       <Text style={styles.title}>Đăng nhập</Text>
 
       <View style={styles.inputContainer}>
         <MaterialIcons name="person-outline" size={24} color="#666" />
         <TextInput
           style={styles.input}
-          placeholder="Email hoặc số điện thoại"
-          value={email}
-          onChangeText={setEmail}
+          placeholder="Tên tài khoản"
+          value={account}
+          onChangeText={setAccount}
         />
       </View>
 
@@ -54,14 +68,17 @@ export default function LoginScreen({ navigation }) {
           onChangeText={setPassword}
         />
         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-          <MaterialIcons name={showPassword ? "visibility" : "visibility-off"} size={24} color="#666" />
+          <MaterialIcons
+            name={showPassword ? "visibility" : "visibility-off"}
+            size={24}
+            color="#666"
+          />
         </TouchableOpacity>
       </View>
 
       <TouchableOpacity onPress={handleLogin} style={styles.loginButton}>
         <Text style={styles.loginButtonText}>Đăng nhập</Text>
       </TouchableOpacity>
-
 
       {/* Đăng nhập bằng mạng xã hội */}
       <Text style={styles.orText}>hoặc đăng nhập với</Text>
@@ -74,7 +91,8 @@ export default function LoginScreen({ navigation }) {
 
       <TouchableOpacity onPress={() => navigation.navigate("Register")}>
         <Text style={styles.signupText}>
-          Bạn chưa có tài khoản? <Text style={styles.signupLink}>Đăng ký ngay</Text>
+          Bạn chưa có tài khoản?{" "}
+          <Text style={styles.signupLink}>Đăng ký ngay</Text>
         </Text>
       </TouchableOpacity>
 
