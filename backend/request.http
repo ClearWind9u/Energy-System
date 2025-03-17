@@ -1,4 +1,6 @@
 
+GET http://localhost:3000/device
+
 POST http://localhost:3000/device/addDevice
 Content-Type: application/json
 
