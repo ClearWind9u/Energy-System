@@ -7,11 +7,12 @@ import {
   StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
+import Config from 'react-native-config';
 import axios from "axios";
 export default function RegisterScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
   const [idGroup, setIdGroup] = useState("");
-  const [email, setEmail] = useState("");
+  const [account, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,12 +23,12 @@ export default function RegisterScreen({ navigation }) {
       return;
     }
     let data = {
-      account: email,
+      account: account,
       password: password,
       name: fullName,
       id_group: idGroup,
     };
-    const apiURL = "http://192.168.176.9:3000/api/create-user";
+    const apiURL = `http://${Config.LOCALHOST}/api/create-user`;
     try {
       const response = await axios.post(apiURL, data);
       if (response.data.errCode != 0) {
@@ -73,14 +74,14 @@ export default function RegisterScreen({ navigation }) {
         />
       </View>
 
-      {/* Ô nhập Email */}
+      {/* Ô nhập Account */}
       <View style={styles.inputContainer}>
-        <MaterialIcons name="email" size={24} color="#666" />
+        <MaterialIcons name="account" size={24} color="#666" />
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
-          value={email}
+          placeholder="Tên tài khoản"
+          keyboardType="account-address"
+          value={account}
           onChangeText={setEmail}
         />
       </View>

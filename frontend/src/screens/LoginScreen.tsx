@@ -1,26 +1,28 @@
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import axios from "axios";
+import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  View,
+  Image,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  Image,
-  StyleSheet,
+  View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
-import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
-import axios from "axios";
+
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState("");
+  const [account, setAccount] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   // Xử lý đăng nhập
   const handleLogin = async () => {
     let data = {
-      account: email,
+      account: account,
       password: password,
     };
-    const apiURL = "http://192.168.176.9:3000/api/login";
+    // console.log("LOCALHOST: ", process.env.EXPO_PUBLIC_LOCALHOST);
+    const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/login`;
     try {
       const response = await axios.post(apiURL, data);
       if (response.data.errCode != 0) {
@@ -50,9 +52,9 @@ export default function LoginScreen({ navigation }) {
         <MaterialIcons name="person-outline" size={24} color="#666" />
         <TextInput
           style={styles.input}
-          placeholder="Email hoặc số điện thoại"
-          value={email}
-          onChangeText={setEmail}
+          placeholder="Tên tài khoản"
+          value={account}
+          onChangeText={setAccount}
         />
       </View>
 
