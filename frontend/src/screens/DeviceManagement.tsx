@@ -1,26 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, TextInput, Modal } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
 import { useTheme } from "../navigation/ThemeContext";
 
 export default function DeviceManagement({ navigation }) {
-    const {isDayMode, setIsDayMode} = useTheme();
+    const { isDayMode, setIsDayMode } = useTheme();
     const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
     const [modalVisible, setModalVisible] = useState(false);
-    const [devices, setDevices] = useState([
-        { id: 1, name: "TV", isOn: true, icon: "tv", count: 1 },
-        { id: 2, name: "Đèn LED", isOn: true, icon: "lightbulb-o", count: 4 },
-        { id: 3, name: "Quạt", isOn: true, iconFamily: "MaterialCommunityIcons", icon: "fan", count: 2 },
-    ]);
+    const [editModalVisible, setEditModalVisible] = useState(false);
+    const [devices, setDevices] = useState([]);
+    const [selectedDevice, setSelectedDevice] = useState(null);
 
-    const addDevice = (newDevice) => {
-        setDevices([...devices, { id: devices.length + 1, ...newDevice }]);
+    const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
+
+    useEffect(() => {
+        fetchDevices();
+    }, []);
+
+    const fetchDevices = async () => {
+        try {
+            const response = await axios.get(`${apiURL}`);
+            setDevices(response.data);
+        } catch (error) {
+            console.log("Lỗi khi lấy danh sách thiết bị:", error);
+        }
     };
 
-    const toggleDevice = (id) => {
-        setDevices((prev) =>
-            prev.map((device) => (device.id === id ? { ...device, isOn: !device.isOn } : device))
-        );
+    const handleAddDevice = async (newDevice) => {
+        let data = {
+            device_name: newDevice.name,
+            max_energy: newDevice.maxEnergy,
+            id_group: newDevice.clusterID,
+        };
+        try {
+            const response = await axios.post(`${apiURL}/addDevice`, data);
+            if (response.status === 200) {
+                alert("Thêm thiết bị thành công!");
+                fetchDevices();
+            } else {
+                alert(response.data.message);
+            }
+        } catch (error) {
+            console.log("Lỗi khi thêm thiết bị:", error);
+        }
+    };
+
+    const handleEditDevice = (device) => {
+        setSelectedDevice(device);
+        setEditModalVisible(true);
+    };
+
+    const handleUpdateDevice = async (updatedDevice) => {
+        let data = {
+            device_id: updatedDevice.id,
+            device_name: updatedDevice.name,
+            max_energy: updatedDevice.maxEnergy,
+            id_group: updatedDevice.clusterID,
+        };
+        try {
+            const response = await axios.post(`${apiURL}/editDevice`, data);
+            if (response.status === 200) {
+                alert("Cập nhật thiết bị thành công!");
+                fetchDevices();
+                setEditModalVisible(false);
+            } else {
+                alert(response.data.message);
+            }
+        } catch (error) {
+            console.log("Lỗi khi cập nhật thiết bị:", error);
+        }
+    };
+
+    // API: Xóa thiết bị
+    const handleDeleteDevice = async (deviceId) => {
+        try {
+            const response = await axios.delete(`${apiURL}/deleteDevice`, {
+                params: { device_id: deviceId } // Truyền device_id vào params
+            });
+            if (response.status === 200) {
+                alert("Xóa thiết bị thành công!");
+                fetchDevices(); // Cập nhật danh sách thiết bị
+            } else {
+                alert(response.data.message);
+            }
+        } catch (error) {
+            console.log("Lỗi khi xóa thiết bị:", error);
+        }
     };
 
     return (
@@ -57,16 +123,18 @@ export default function DeviceManagement({ navigation }) {
             <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
                 {devices.map((device) => (
                     <View key={device.id} style={[styles.deviceCard, currentStyles.deviceCard]}>
-                        {device.iconFamily === "MaterialCommunityIcons" ? (
-                            <MaterialCommunityIcons name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
-                        ) : (
-                            <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
-                        )}
+                        <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
                         <Text style={[styles.deviceName, currentStyles.text]}>{device.name}</Text>
-                        <Text style={[styles.deviceCount, currentStyles.text]}>{device.count} Thiết bị</Text>
-                        <TouchableOpacity>
-                            <FontAwesome name="trash" size={20} color="red" />
-                        </TouchableOpacity>
+
+                        {/* Nhóm nút Sửa & Xóa */}
+                        <View style={styles.buttonGroup}>
+                            <TouchableOpacity onPress={() => handleEditDevice(device)}>
+                                <FontAwesome name="pencil" size={20} color="blue" style={styles.actionButton} />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => handleDeleteDevice(device.id)}>
+                                <FontAwesome name="trash" size={20} color="red" style={styles.actionButton} />
+                            </TouchableOpacity>
+                        </View>
                     </View>
                 ))}
             </ScrollView>
@@ -75,33 +143,35 @@ export default function DeviceManagement({ navigation }) {
             <AddDeviceModal
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
-                onSubmit={addDevice}
+                onSubmit={handleAddDevice}
             />
+            {/* Modal Sửa Thiết Bị */}
+            <EditDeviceModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} onSubmit={handleUpdateDevice} device={selectedDevice} />
 
             {/* Thanh điều hướng */}
-             <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-                    <TouchableOpacity style={styles.navButton}>
-                      <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-                      <Text style={styles.navText}>Bảng điều khiển</Text>
-                    </TouchableOpacity>
-            
-                    <TouchableOpacity style={styles.navButton}>
-                      <MaterialCommunityIcons name="microphone" size={24} color="white" />
-                      <Text style={styles.navText}>Microphone</Text>
-                    </TouchableOpacity>
-            
-                    <TouchableOpacity style={styles.navButton}>
-                      <MaterialCommunityIcons name="account" size={24} color="white" />
-                      <Text style={styles.navText}>Tài khoản</Text>
-                    </TouchableOpacity>
-                  </View>
+            <View style={[styles.bottomNav, currentStyles.bottomNav]}>
+                <TouchableOpacity style={styles.navButton}>
+                    <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
+                    <Text style={styles.navText}>Bảng điều khiển</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.navButton}>
+                    <MaterialCommunityIcons name="microphone" size={24} color="white" />
+                    <Text style={styles.navText}>Microphone</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.navButton}>
+                    <MaterialCommunityIcons name="account" size={24} color="white" />
+                    <Text style={styles.navText}>Tài khoản</Text>
+                </TouchableOpacity>
+            </View>
         </View>
     );
 }
 
 const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
     const [deviceName, setDeviceName] = useState("");
-    const [maxPower, setMaxPower] = useState("");
+    const [maxEnergy, setMaxEnergy] = useState("");
     const [clusterID, setClusterID] = useState("");
 
     return (
@@ -121,8 +191,8 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
                         style={styles.input}
                         placeholder="Mức năng lượng tối đa (W)"
                         keyboardType="numeric"
-                        value={maxPower}
-                        onChangeText={setMaxPower}
+                        value={maxEnergy}
+                        onChangeText={setMaxEnergy}
                     />
 
                     <TextInput
@@ -139,7 +209,7 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => {
-                                onSubmit({ name: deviceName, maxPower, clusterID });
+                                onSubmit({ name: deviceName, maxEnergy, clusterID });
                                 onClose();
                             }}
                             style={styles.submitButton}
@@ -152,6 +222,42 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
         </Modal>
     );
 };
+
+const EditDeviceModal = ({ visible, onClose, onSubmit, device }) => {
+    const [deviceName, setDeviceName] = useState(device?.name || "");
+    const [maxEnergy, setMaxEnergy] = useState(device?.max_energy?.toString() || "");
+    const [clusterID, setClusterID] = useState(device?.id_group?.toString() || "");
+
+    useEffect(() => {
+        if (device) {
+            setDeviceName(device.name);
+            setMaxEnergy(device.max_energy?.toString());
+            setClusterID(device.id_group?.toString());
+        }
+    }, [device]);
+
+    return (
+        <Modal visible={visible} transparent={true} animationType="slide">
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>Chỉnh sửa thiết bị</Text>
+                    <TextInput style={styles.input} placeholder="Tên thiết bị" value={deviceName} onChangeText={setDeviceName} />
+                    <TextInput style={styles.input} placeholder="Mức năng lượng tối đa (W)" keyboardType="numeric" value={maxEnergy} onChangeText={setMaxEnergy} />
+                    <TextInput style={styles.input} placeholder="ID cụm" keyboardType="numeric" value={clusterID} onChangeText={setClusterID} />
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+                            <Text style={styles.buttonText}>Hủy</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={() => { onSubmit({ id: device.id, name: deviceName, maxEnergy, clusterID }); onClose(); }} style={styles.submitButton}>
+                            <Text style={styles.buttonText}>Lưu</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+};
+
 
 const styles = StyleSheet.create({
     container: {
@@ -202,6 +308,11 @@ const styles = StyleSheet.create({
         marginBottom: 15,
         alignItems: "center",
         flexDirection: "column",
+    },
+    buttonGroup: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 50,
     },
     deviceName: {
         fontSize: 16,

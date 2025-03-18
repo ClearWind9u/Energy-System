@@ -4,7 +4,7 @@ const db = require('../database/db')
 //lay danh sach thiet bi
 exports.getAllDevices = async (req,res) => {
  try {
-    const [result] = await db.query("SELECT * FROM device")
+    const [result] = await db.promise().query("SELECT * FROM device")
     return res.status(200).json(result)
  } catch (error) {
     console.error("Loi khi lay thong tin cac thiet bi:", error.message);
@@ -12,57 +12,60 @@ exports.getAllDevices = async (req,res) => {
  }
 
 }
-exports.addDevices = async (req,res) => {
+exports.addDevices = async (req, res) => {
    try {
-    const {device_id, device_name, id_group} = req.body
-        var sql = "SELECT * FROM device WHERE id = ? "
-        const [result] = await db.query(sql,[device_id])
-        console.log(result);
-        if(result.length!=0){
-            return res.status(500).json({message: "da ton tai ID "})
-        }
-        var insertSql = "INSERT INTO device (id, name, max_energy, electric_consumed, time_used, id_group ) VALUES (?,?,0,0,0,?)"
-        await db.query(insertSql,[device_id, device_name, id_group])
-         return res.status(200).json({message:"da them thanh cong"})
+       const { device_name, max_energy, id_group } = req.body;
+
+       var insertSql = "INSERT INTO device (name, max_energy, electric_consumed, time_used, id_group) VALUES (?, ?, 0, 0, ?)";
+       const [result] = await db.promise().query(insertSql, [device_name, max_energy, id_group]);
+
+       return res.status(200).json({ message: "Đã thêm thành công", device_id: result.insertId });
    } catch (error) {
-    console.error("Loi khi them thiet bi:", error.message);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+       console.error("Lỗi khi thêm thiết bị:", error.message);
+       return res.status(500).json({ message: "Internal server error", error: error.message });
    }
-}
-exports.editDevices = async (req,res) => {
+};
+
+exports.editDevices = async (req, res) => {
    try {
-    const {device_id, device_new_name} = req.body
-        var sql = "SELECT * FROM device WHERE id = ? "
-        const [result] = await db.query(sql,[device_id])
-        console.log(result);
-        if(result.length==0){
-            return res.status(500).json({message: "Khong ton tai thiet bi can sua "})
-        }
-        var updateSql = "UPDATE device SET name = ? WHERE id = ?"
-        const params = [device_new_name,device_id]
-        await db.query(updateSql,params)
-         return res.status(200).json({message:"da sua thiet bi thanh cong"})
+       const { device_id, device_name, max_energy, id_group } = req.body;
+       
+       const [result] = await db.promise().query("SELECT * FROM device WHERE id = ?", [device_id]);
+       if (result.length === 0) {
+           return res.status(400).json({ message: "Không tồn tại thiết bị cần sửa" });
+       }
+
+       const updateSql = "UPDATE device SET name = ?, max_energy = ?, id_group = ? WHERE id = ?";
+       await db.promise().query(updateSql, [device_name, max_energy, id_group, device_id]);
+
+       return res.status(200).json({ message: "Đã sửa thiết bị thành công" });
    } catch (error) {
-    console.error("Loi khi sua thiet bi:", error.message);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+       console.error("Lỗi khi sửa thiết bị:", error.message);
+       return res.status(500).json({ message: "Internal server error", error: error.message });
    }
-}
-exports.deleteDevices = async (req,res) => {
+};
+
+exports.deleteDevices = async (req, res) => {
    try {
-    const {device_id} = req.body
-        var sql = "SELECT * FROM device WHERE id = ? "
-        const [result] = await db.query(sql,[device_id])
-        console.log(result);
-        console.log(device_id);
-        if(result.length==0){
-            return res.status(500).json({message: "Khong ton tai thiet bi can xoa "})
-        }
-        var deleteSql = "DELETE FROM device WHERE id = ?"
-        const params = [device_id]
-        await db.query(deleteSql,params)
-         return res.status(200).json({message:"da xoa thiet bi thanh cong"})
+       const { device_id } = req.query;
+
+       if (!device_id) {
+           return res.status(400).json({ message: "Thiếu device_id" });
+       }
+
+       // Kiểm tra xem thiết bị có tồn tại không
+       const [result] = await db.promise().query("SELECT * FROM device WHERE id = ?", [device_id]);
+       
+       if (result.length === 0) {
+           return res.status(404).json({ message: "Thiết bị cần xóa không tồn tại" });
+       }
+
+       // Tiến hành xóa thiết bị
+       await db.promise().query("DELETE FROM device WHERE id = ?", [device_id]);
+
+       return res.status(200).json({ message: "Đã xóa thiết bị thành công" });
    } catch (error) {
-    console.error("Loi khi xoa thiet bi:", error.message);
-    return res.status(500).json({ message: "Internal server error", error: error.message });
+       console.error("Lỗi khi xóa thiết bị:", error.message);
+       return res.status(500).json({ message: "Internal server error", error: error.message });
    }
-}
+};
