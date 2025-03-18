@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, TextInput, Modal } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "../navigation/ThemeContext";
 
 export default function DeviceManagement({ navigation }) {
-    const [isDayMode, setIsDayMode] = useState(true);
+    const {isDayMode, setIsDayMode} = useTheme();
     const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
     const [modalVisible, setModalVisible] = useState(false);
     const [devices, setDevices] = useState([
@@ -78,18 +79,22 @@ export default function DeviceManagement({ navigation }) {
             />
 
             {/* Thanh điều hướng */}
-            <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-                    <Text style={styles.navText}>Bảng điều khiển</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="microphone" size={24} color="white" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="account" size={24} color="white" />
-                </TouchableOpacity>
-            </View>
+             <View style={[styles.bottomNav, currentStyles.bottomNav]}>
+                    <TouchableOpacity style={styles.navButton}>
+                      <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
+                      <Text style={styles.navText}>Bảng điều khiển</Text>
+                    </TouchableOpacity>
+            
+                    <TouchableOpacity style={styles.navButton}>
+                      <MaterialCommunityIcons name="microphone" size={24} color="white" />
+                      <Text style={styles.navText}>Microphone</Text>
+                    </TouchableOpacity>
+            
+                    <TouchableOpacity style={styles.navButton}>
+                      <MaterialCommunityIcons name="account" size={24} color="white" />
+                      <Text style={styles.navText}>Tài khoản</Text>
+                    </TouchableOpacity>
+                  </View>
         </View>
     );
 }

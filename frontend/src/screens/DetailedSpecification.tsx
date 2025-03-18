@@ -46,19 +46,21 @@ export default function DetailedSpecification({ navigation }) {
 
        {/* Bottom Navigation */}
             <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-                <Text style={styles.navText}>Bảng điều khiển</Text>
-              </TouchableOpacity>
-      
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="microphone" size={24} color="white" />
-              </TouchableOpacity>
-      
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="account" size={24} color="white" />
-              </TouchableOpacity>
-            </View>
+                   <TouchableOpacity style={styles.navButton}>
+                     <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
+                     <Text style={styles.navText}>Bảng điều khiển</Text>
+                   </TouchableOpacity>
+           
+                   <TouchableOpacity style={styles.navButton}>
+                     <MaterialCommunityIcons name="microphone" size={24} color="white" />
+                     <Text style={styles.navText}>Microphone</Text>
+                   </TouchableOpacity>
+           
+                   <TouchableOpacity style={styles.navButton}>
+                     <MaterialCommunityIcons name="account" size={24} color="white" />
+                     <Text style={styles.navText}>Tài khoản</Text>
+                   </TouchableOpacity>
+                 </View>
       
 
   

@@ -3,7 +3,7 @@ import { View, Text, Switch, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 
-export default function AdjustComsumption({ navigation }) {
+export default function MonitorConsumption({ navigation }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
@@ -53,7 +53,7 @@ export default function AdjustComsumption({ navigation }) {
           <TouchableOpacity
             key={device.id}
             style={[styles.deviceCard, currentStyles.deviceCard]}
-            onPress={() => navigation.navigate("device")}
+            onPress={() => navigation.navigate("Detail")}
           >
             {device.iconFamily === "MaterialCommunityIcons" ? (
               <MaterialCommunityIcons name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
