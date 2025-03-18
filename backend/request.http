@@ -1,6 +1,7 @@
 
 GET http://localhost:3000/device
 
+###
 POST http://localhost:3000/device/addDevice
 Content-Type: application/json
 
@@ -16,4 +17,13 @@ Content-Type: application/json
 {
     "device_id": 11,
     "device_new_name": "aassad"
+}
+
+###
+
+DELETE http://localhost:3000/device/deleteDevice
+Content-Type: application/json
+
+{
+    "device_id": 11
 }
