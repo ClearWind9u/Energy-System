@@ -29,16 +29,16 @@ export default function AccountInfor({ navigation, route }) {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`http://10.0.2.2:3000/api/get-user/${userID}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${userID}`);
         const data = await response.json();
-        console.log("User Data:", data); // Debug xem API trả về gì
+        //console.log("User Data:", data);
         if (data.errCode === 0) {
           setUser(data.user);
         } else {
           setError("Không tìm thấy người dùng");
         }
       } catch (error) {
-        setError("Lỗi khi tải dữ liệuuuuu");
+        setError("Lỗi khi tải dữ liệu");
       }
       setLoading(false);
     };
@@ -106,7 +106,7 @@ export default function AccountInfor({ navigation, route }) {
             <Text style={styles.label}>Mã số</Text>
             <TextInput
               style={styles.input}
-              value={user.id}
+              value={user.id ? user.id.toString() : ""}
               onChangeText={(text) => setUser({ ...user, id: text })}
             />
     
@@ -121,7 +121,7 @@ export default function AccountInfor({ navigation, route }) {
             <Text style={styles.label}>Mã group</Text>
             <TextInput
               style={styles.input}
-              value={user.id_group}
+              value={user.id_group ? user.id_group.toString() : ""} 
               onChangeText={(text) => setUser({ ...user, id_group: text })}
             />
           </View>

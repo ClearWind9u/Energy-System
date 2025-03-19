@@ -15,6 +15,9 @@ export default function HomeScreen({ navigation, route }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
 
+  // Lấy userID từ route.params
+  const userID = route.params?.userID || null;
+
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
