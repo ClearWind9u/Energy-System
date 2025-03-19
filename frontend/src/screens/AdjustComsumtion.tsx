@@ -1,30 +1,50 @@
-import React, { useState } from "react";
-import { View, Text, Switch, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
-
 export default function AdjustComsumption({ navigation }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const [devices, setDevices] = useState([
-    { id: 1, name: "TV", isOn: true, icon: "tv", count: 1 },
-    { id: 2, name: "Đèn Led", isOn: true, icon: "lightbulb-o", count: 1 },
-    { id: 3, name: "Quạt", isOn: true, icon: "fan", iconFamily: "MaterialCommunityIcons", count: 1 },
-  ])
-  const toggleDevice = (id) => {
-    setDevices((prev) =>
-      prev.map((device) =>
-        device.id === id ? { ...device, isOn: !device.isOn } : device
-      )
-    );
-  }
+  const [devices, setDevices] = useState([]);
+  const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
+
+    useEffect(() => {
+        fetchDevices();
+    }, []);
+
+    const fetchDevices = async () => {
+        try {
+          var response = await axios.get(`${apiURL}`);
+          let copy = response.data;
+          copy.forEach(item => {
+            if(item.name.toLowerCase().includes("bulb")){
+              item.icon = "lightbulb-o";
+            }
+            else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
+                item.icon = "tv";
+            }
+            else item.icon = "gears";
+          });
+          setDevices(copy);
+        } catch (error) {
+            console.log("Lỗi khi lấy danh sách thiết bị:", error);
+        }
+    };
+  // const toggleDevice = (id) => {
+  //   setDevices((prev) =>
+  //     prev.map((device) =>
+  //       device.id === id ? { ...device, isOn: !device.isOn } : device
+  //     )
+  //   );
+  // }
 
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Điều chỉnh mức tiêu thụ</Text>
@@ -53,10 +73,13 @@ export default function AdjustComsumption({ navigation }) {
           <TouchableOpacity
             key={device.id}
             style={[styles.deviceCard, currentStyles.deviceCard]}
-            onPress={() => navigation.navigate("device")}
+            onPress={() => navigation.navigate("device",{
+              deviceName: device.name,
+              maxEnergy: device.max_energy,  
+            })}
           >
             {device.iconFamily === "MaterialCommunityIcons" ? (
-              <MaterialCommunityIcons name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
+              <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
             ) : (
               <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
             )}

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from "react";
-import { ScrollView, View, Text, Switch, TouchableOpacity, StyleSheet, TextInput, Modal } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 
 export default function DeviceManagement({ navigation }) {
@@ -20,8 +20,18 @@ export default function DeviceManagement({ navigation }) {
 
     const fetchDevices = async () => {
         try {
-            const response = await axios.get(`${apiURL}`);
-            setDevices(response.data);
+            var response = await axios.get(`${apiURL}`);
+          let copy = response.data;
+          copy.forEach(item => {
+            if(item.name.toLowerCase().includes("bulb")){
+              item.icon = "lightbulb-o";
+            }
+            else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
+                item.icon = "tv";
+            }
+            else item.icon = "gears";
+          });
+          setDevices(copy);
         } catch (error) {
             console.log("Lỗi khi lấy danh sách thiết bị:", error);
         }
@@ -123,7 +133,7 @@ export default function DeviceManagement({ navigation }) {
             <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
                 {devices.map((device) => (
                     <View key={device.id} style={[styles.deviceCard, currentStyles.deviceCard]}>
-                        <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
+                        <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
                         <Text style={[styles.deviceName, currentStyles.text]}>{device.name}</Text>
 
                         {/* Nhóm nút Sửa & Xóa */}

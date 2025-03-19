@@ -1,12 +1,12 @@
-import React, { useState } from "react";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
 import {
-  View,
+  StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
-  Switch,
-  StyleSheet,
+  View,
 } from "react-native";
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 
 export default function HomeScreen({ navigation, route }) {
@@ -14,7 +14,7 @@ export default function HomeScreen({ navigation, route }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const { userID } = route.params;
+
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
@@ -31,7 +31,7 @@ export default function HomeScreen({ navigation, route }) {
         </TouchableOpacity>
 
         <Text style={[styles.title, currentStyles.text]}>
-          Trang chủ của ID {userID}
+          Trang chủ 
         </Text>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />

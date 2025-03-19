@@ -1,24 +1,46 @@
-import React, { useState } from "react";
-import { 
-  View, Text, Switch, TouchableOpacity, StyleSheet, Image 
-} from "react-native";
-import Slider from "@react-native-community/slider";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import Slider from "@react-native-community/slider";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import {
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 
-export default function DeviceScreen({ navigation }) {
+export default function DeviceScreen({ navigation,route }) {
   const {isDayMode, setIsDayMode} = useTheme();
-  const [power, setPower] = useState(24); // Power level
+  const energy = parseFloat(route.params?.maxEnergy);
+  const [power, setPower] = useState(energy); // Power level
   const [isDeviceOn, setIsDeviceOn] = useState(true);
   const [selectedColor, setSelectedColor] = useState("green");
-
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-
+  const setMaxPower = async (pow: number) => {
+    const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/set-power`;
+    let data = {
+      power: pow,
+      name: route.params.deviceName,
+    }
+    try {
+      await axios.post(`${apiURL}`, data);
+      console.log("Thiết lập công suất thiết bị thành công");
+    } catch (error) {
+      console.log("Lỗi khi thiết lập công suất thiết bị:", error);
+    }
+  }
+  useEffect(() => {
+    setTimeout(() => {
+      setMaxPower(power);
+    }, 500); 
+  }, [power]);
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate("Adjust")}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Phòng khách</Text>
@@ -44,7 +66,7 @@ export default function DeviceScreen({ navigation }) {
       <View style={[styles.deviceCard, currentStyles.modeContainer]}>
         <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
         <View style={{ flex: 1, marginLeft: 10 }}>
-          <Text style={[styles.deviceName, currentStyles.text]}>Đèn LED</Text>
+          <Text style={[styles.deviceName, currentStyles.text]}>{route.params.deviceName}</Text>
           <Text style={[styles.deviceCount, currentStyles.text]}>1 thiết bị</Text>
         </View>
         <Switch
@@ -62,10 +84,10 @@ export default function DeviceScreen({ navigation }) {
       <Slider
         style={styles.slider}
         minimumValue={0}
-        maximumValue={100}
+        maximumValue={999}
         step={1}
         value={power}
-        onValueChange={(value) => setPower(value)}
+        onValueChange={(value) =>{setPower(value)}}
         minimumTrackTintColor="green"
         maximumTrackTintColor="gray"
         thumbTintColor="green"

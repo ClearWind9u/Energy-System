@@ -69,3 +69,14 @@ exports.deleteDevices = async (req, res) => {
        return res.status(500).json({ message: "Internal server error", error: error.message });
    }
 };
+exports.setPower = async (req, res) => {
+    try {
+        const {power,name} = req.body;
+        console.log(power + " " + name);
+        await db.promise().query("UPDATE device SET max_energy = ? WHERE name = ?", [power,name]);
+        return res.status(200).json({ message: "Đã thiết lập công suất thành công" });
+    } catch (error) {
+        console.error("Lỗi khi thiêt lập công suất:", error.message);
+       return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+}

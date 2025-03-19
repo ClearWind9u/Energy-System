@@ -1,24 +1,38 @@
-import React, { useState } from "react";
-import { View, Text, Switch, TouchableOpacity, StyleSheet } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
-
 export default function MonitorConsumption({ navigation }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const [devices, setDevices] = useState([
-    { id: 1, name: "TV", isOn: true, icon: "tv", count: 1 },
-    { id: 2, name: "Đèn Led", isOn: true, icon: "lightbulb-o", count: 1 },
-    { id: 3, name: "Quạt", isOn: true, icon: "fan", iconFamily: "MaterialCommunityIcons", count: 1 },
-  ])
-  const toggleDevice = (id) => {
-    setDevices((prev) =>
-      prev.map((device) =>
-        device.id === id ? { ...device, isOn: !device.isOn } : device
-      )
-    );
-  }
+  const [devices, setDevices] = useState([]);
+  const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
+
+    useEffect(() => {
+        fetchDevices();
+    }, []);
+
+    const fetchDevices = async () => {
+        try {
+            var response = await axios.get(`${apiURL}`);
+            let copy = response.data;
+            copy.forEach(item => {
+              if(item.name.toLowerCase().includes("bulb")){
+                item.icon = "lightbulb-o";
+              }
+              else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
+                  item.icon = "tv";
+              }
+              else item.icon = "fan-table";
+            });
+            setDevices(copy);
+        } catch (error) {
+            console.log("Lỗi khi lấy danh sách thiết bị:", error);
+        }
+    };
+
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -27,7 +41,7 @@ export default function MonitorConsumption({ navigation }) {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>Điều chỉnh mức tiêu thụ</Text>
+        <Text style={[styles.title, currentStyles.text]}>Theo dõi mức tiêu thụ</Text>
         <TouchableOpacity>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
@@ -56,7 +70,7 @@ export default function MonitorConsumption({ navigation }) {
             onPress={() => navigation.navigate("Detail")}
           >
             {device.iconFamily === "MaterialCommunityIcons" ? (
-              <MaterialCommunityIcons name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
+              <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
             ) : (
               <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
             )}
