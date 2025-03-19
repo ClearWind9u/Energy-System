@@ -57,6 +57,7 @@ exports.createUser = (req, res) => {
     }
   );
 };
+
 exports.handleLogin = (req, res) => {
   let body = req.body;
   let values = [body.account];
@@ -95,4 +96,19 @@ exports.handleLogin = (req, res) => {
       return res.status(200).json(message);
     }
   });
+};
+exports.getUserById = (req, res) => {
+  const { id } = req.params; // Lấy ID từ URL
+
+ db.query("SELECT id, account, name, id_group FROM user WHERE id = ?", [id], (err, result) => {
+   if (err) {
+     return res.status(500).json({ errCode: 1, errMessage: "Lỗi server", error: err.message });
+   }
+
+   if (result.length === 0) {
+     return res.status(404).json({ errCode: 1, errMessage: "Không tìm thấy người dùng" });
+   }
+
+   res.status(200).json({ errCode: 0, user: result[0] });
+ });
 };

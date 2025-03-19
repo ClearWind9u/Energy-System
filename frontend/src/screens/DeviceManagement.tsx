@@ -102,7 +102,7 @@ export default function DeviceManagement({ navigation }) {
     return (
         <View style={[styles.container, currentStyles.container]}>
             {/* Header */}
-            <View style={[styles.header, currentStyles.header]}>
+            <View style={[styles.header]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
                 </TouchableOpacity>

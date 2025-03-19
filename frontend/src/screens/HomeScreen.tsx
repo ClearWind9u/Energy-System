@@ -97,7 +97,7 @@ export default function HomeScreen({ navigation, route }) {
                <Text style={styles.navText}>Microphone</Text>
              </TouchableOpacity>
      
-             <TouchableOpacity style={styles.navButton}>
+             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("AccountInfor" ,{userID})}>
                <MaterialCommunityIcons name="account" size={24} color="white" />
                <Text style={styles.navText}>Tài khoản</Text>
              </TouchableOpacity>

@@ -27,3 +27,12 @@ Content-Type: application/json
 {
     "device_id": 11
 }
+
+
+### 
+POST http://app.coreiot.io/api/v1/g7x8nn2xgWYXP6glDmrA/telemetry 
+Content-Type:application/json 
+
+{
+    "temperature":25
+}
