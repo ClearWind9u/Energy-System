@@ -9,13 +9,17 @@ import {
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import NavBar from "../component/Navbar";
+
+
 
 export default function AccountInfor({ navigation, route }) {
 
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const { userID } = route.params; // Nhận userID từ HomeScreen
+  const [userID, setUserID] = useState(null);
   const [user, setUser] = useState({
     name: "",
     id: "",
@@ -25,13 +29,29 @@ export default function AccountInfor({ navigation, route }) {
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem("userID");
+        if (storedUserID) {
+          console.log("Retrieved userID at homeScreen:", storedUserID);
+          setUserID(storedUserID);
+        }
+      } catch (error) {
+        console.log("Error retrieving userID:", error);
+      }
+    };
+  
+    fetchUserID();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
+      if (!route.params?.userID) return; // Kiểm tra userID trước khi fetch
       try {
-        const response = await fetch(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${userID}`);
+        const response = await fetch(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${route.params.userID}`);
         const data = await response.json();
-        //console.log("User Data:", data);
         if (data.errCode === 0) {
           setUser(data.user);
         } else {
@@ -42,10 +62,10 @@ export default function AccountInfor({ navigation, route }) {
       }
       setLoading(false);
     };
-
+  
     fetchUserData();
-  }, [userID]); // Gọi lại API nếu userID thay đổi
-
+  }, [route.params?.userID]);
+  
   
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -88,63 +108,23 @@ export default function AccountInfor({ navigation, route }) {
         />
       </View>
 
- {/* Nội dung hiển thị */}
- <View style={styles.content}>
-        {loading ? (
-          <ActivityIndicator size="large" color="blue" />
-        ) : error ? (
-          <Text style={[styles.errorText, currentStyles.text]}>{error}</Text>
-        ) : (
-            <View style={styles.inputContainer}>
-            <Text style={styles.label}>Tên</Text>
-            <TextInput
-              style={styles.input}
-              value={user.name}
-              onChangeText={(text) => setUser({ ...user, name: text })}
-            />
-    
-            <Text style={styles.label}>Mã số</Text>
-            <TextInput
-              style={styles.input}
-              value={user.id ? user.id.toString() : ""}
-              onChangeText={(text) => setUser({ ...user, id: text })}
-            />
-    
-            <Text style={styles.label}>Tài khoản</Text>
-            <TextInput
-              style={styles.input}
-              value={user.account}
-              
-              onChangeText={(text) => setUser({ ...user, account: text })}
-            />
-    
-            <Text style={styles.label}>Mã group</Text>
-            <TextInput
-              style={styles.input}
-              value={user.id_group ? user.id_group.toString() : ""} 
-              onChangeText={(text) => setUser({ ...user, id_group: text })}
-            />
-          </View>
-        )}
-      </View>
+      <View style={styles.content}>
+  {loading ? (
+    <ActivityIndicator size="large" color="blue" />
+  ) : error ? (
+    <Text style={[styles.errorText, currentStyles.text]}>{error}</Text>
+  ) : (
+    <View>
+      <Text style={[styles.label, currentStyles.text]}>Tên: {user.name}</Text>
+      <Text style={[styles.label, currentStyles.text]}>Mã số: {user.id}</Text>
+      <Text style={[styles.label, currentStyles.text]}>Tài khoản: {user.account}</Text>
+      <Text style={[styles.label, currentStyles.text]}>Mã nhóm: {user.id_group}</Text>
+    </View>
+  )}
+</View>
 
       {/* Thanh điều hướng */}
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-             <TouchableOpacity style={styles.navButton}   onPress={() => navigation.navigate("Home")} >
-               <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-               <Text style={styles.navText}>Bảng điều khiển</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton}>
-               <MaterialCommunityIcons name="microphone" size={24} color="white" />
-               <Text style={styles.navText}>Microphone</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("AccountInfor")}>
-               <MaterialCommunityIcons name="account" size={24} color="white" />
-               <Text style={styles.navText}>Tài khoản</Text>
-             </TouchableOpacity>
-        </View>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
     </View >
   );
 }

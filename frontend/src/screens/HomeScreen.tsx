@@ -1,5 +1,5 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
+import React ,{useEffect, useState} from "react";
 import {
   StyleSheet,
   Switch,
@@ -8,15 +8,34 @@ import {
   View,
 } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
+import NavBar from "../component/Navbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen({ navigation, route }) {
 
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
+  const [userID, setUserID] = useState(null);
+  
 
   // Lấy userID từ route.params
-  const userID = route.params?.userID || null;
+  // const userID = route.params?.userID || null;
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem("userID");
+        if (storedUserID) {
+          console.log("Retrieved userID at homeScreen:", storedUserID);
+          setUserID(storedUserID);
+        }
+      } catch (error) {
+        console.log("Error retrieving userID:", error);
+      }
+    };
+  
+    fetchUserID();
+  }, []);
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -62,7 +81,7 @@ export default function HomeScreen({ navigation, route }) {
       {/* Các ô chức năng */}
       <View style={styles.grid}>
         <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]} onPress={() => navigation.navigate("Monitor")}    >
-          <FontAwesome name="eye" size={24} color="black" />TE
+          <FontAwesome name="eye" size={24} color="black" />
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
 
@@ -87,24 +106,8 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
         </TouchableOpacity>
       </View>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
 
-      {/* Thanh điều hướng */}
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-             <TouchableOpacity style={styles.navButton}>
-               <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-               <Text style={styles.navText}>Bảng điều khiển</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton}>
-               <MaterialCommunityIcons name="microphone" size={24} color="white" />
-               <Text style={styles.navText}>Microphone</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("AccountInfor" ,{userID})}>
-               <MaterialCommunityIcons name="account" size={24} color="white" />
-               <Text style={styles.navText}>Tài khoản</Text>
-             </TouchableOpacity>
-           </View>
     </View >
   );
 }

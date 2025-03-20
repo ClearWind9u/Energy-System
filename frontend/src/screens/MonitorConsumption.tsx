@@ -3,11 +3,30 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
+import NavBar from "../component/Navbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function MonitorConsumption({ navigation }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [devices, setDevices] = useState([]);
+  const [userID, setUserID] = useState(null);
+  
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem("userID");
+        if (storedUserID) {
+          console.log("Retrieved userID at homeScreen:", storedUserID);
+          setUserID(storedUserID);
+        }
+      } catch (error) {
+        console.log("Error retrieving userID:", error);
+      }
+    };
+  
+    fetchUserID();
+  }, []);
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
 
     useEffect(() => {
@@ -81,22 +100,7 @@ export default function MonitorConsumption({ navigation }) {
       </View>
 
       {/* Thanh điều hướng */}
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-          <Text style={styles.navText}>Bảng điều khiển</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="microphone" size={24} color="white" />
-          <Text style={styles.navText}>Microphone</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="account" size={24} color="white" />
-          <Text style={styles.navText}>Tài khoản</Text>
-        </TouchableOpacity>
-      </View>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
     </View>
   );
 
