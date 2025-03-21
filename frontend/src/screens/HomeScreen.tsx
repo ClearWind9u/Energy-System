@@ -18,9 +18,6 @@ export default function HomeScreen({ navigation, route }) {
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
   
-
-  // Lấy userID từ route.params
-  // const userID = route.params?.userID || null;
   useEffect(() => {
     const fetchUserID = async () => {
       try {
@@ -106,6 +103,8 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
         </TouchableOpacity>
       </View>
+
+
       <NavBar navigation={navigation} route={{params : {userID}} } />
 
     </View >
