@@ -3,12 +3,14 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
-export default function AdjustComsumption({ navigation }) {
+import NavBar from "../component/Navbar";
+export default function AdjustComsumption({ navigation, route }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [devices, setDevices] = useState([]);
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
+  const userID = route.params?.userID || null;
 
     useEffect(() => {
         fetchDevices();
@@ -89,23 +91,7 @@ export default function AdjustComsumption({ navigation }) {
         ))}
       </View>
 
-      {/* Thanh điều hướng */}
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-          <Text style={styles.navText}>Bảng điều khiển</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="microphone" size={24} color="white" />
-          <Text style={styles.navText}>Microphone</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="account" size={24} color="white" />
-          <Text style={styles.navText}>Tài khoản</Text>
-        </TouchableOpacity>
-      </View>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
     </View>
   );
 

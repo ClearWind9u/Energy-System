@@ -3,6 +3,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Modal, ScrollView, StyleSheet, Switch, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
+import NavBar from "../component/Navbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DeviceManagement({ navigation }) {
     const { isDayMode, setIsDayMode } = useTheme();
@@ -11,6 +13,23 @@ export default function DeviceManagement({ navigation }) {
     const [editModalVisible, setEditModalVisible] = useState(false);
     const [devices, setDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState(null);
+    const [userID, setUserID] = useState(null);
+  
+    useEffect(() => {
+      const fetchUserID = async () => {
+        try {
+          const storedUserID = await AsyncStorage.getItem("userID");
+          if (storedUserID) {
+            console.log("Retrieved userID at homeScreen:", storedUserID);
+            setUserID(storedUserID);
+          }
+        } catch (error) {
+          console.log("Error retrieving userID:", error);
+        }
+      };
+    
+      fetchUserID();
+    }, []);
 
     const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
 
@@ -159,22 +178,7 @@ export default function DeviceManagement({ navigation }) {
             <EditDeviceModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} onSubmit={handleUpdateDevice} device={selectedDevice} />
 
             {/* Thanh điều hướng */}
-            <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-                    <Text style={styles.navText}>Bảng điều khiển</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="microphone" size={24} color="white" />
-                    <Text style={styles.navText}>Microphone</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.navButton}>
-                    <MaterialCommunityIcons name="account" size={24} color="white" />
-                    <Text style={styles.navText}>Tài khoản</Text>
-                </TouchableOpacity>
-            </View>
+            <NavBar navigation={navigation} route={{params : {userID}} } />
         </View>
     );
 }

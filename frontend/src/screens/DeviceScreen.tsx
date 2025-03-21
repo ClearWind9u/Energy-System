@@ -10,14 +10,16 @@ import {
   View
 } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
+import NavBar from "../component/Navbar";
 
-export default function DeviceScreen({ navigation,route }) {
+export default function DeviceScreen({ navigation, route }) {
   const {isDayMode, setIsDayMode} = useTheme();
   const energy = parseFloat(route.params?.maxEnergy);
   const [power, setPower] = useState(energy); // Power level
   const [isDeviceOn, setIsDeviceOn] = useState(true);
   const [selectedColor, setSelectedColor] = useState("green");
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
+  const userID = route.params?.userID || null;
   const setMaxPower = async (pow: number) => {
     const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/set-power`;
     let data = {
@@ -111,22 +113,7 @@ export default function DeviceScreen({ navigation,route }) {
       </View>
 
       {/* Bottom Navigation */}
-       <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-                <Text style={styles.navText}>Bảng điều khiển</Text>
-              </TouchableOpacity>
-      
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="microphone" size={24} color="white" />
-                <Text style={styles.navText}>Microphone</Text>
-              </TouchableOpacity>
-      
-              <TouchableOpacity style={styles.navButton}>
-                <MaterialCommunityIcons name="account" size={24} color="white" />
-                <Text style={styles.navText}>Tài khoản</Text>
-              </TouchableOpacity>
-            </View>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
     </View>
   );
 }
