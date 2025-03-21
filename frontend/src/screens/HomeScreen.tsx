@@ -62,7 +62,7 @@ export default function HomeScreen({ navigation, route }) {
       {/* Các ô chức năng */}
       <View style={styles.grid}>
         <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]} onPress={() => navigation.navigate("Monitor")}    >
-          <FontAwesome name="eye" size={24} color="black" />TE
+          <FontAwesome name="eye" size={24} color="black" />
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
 
