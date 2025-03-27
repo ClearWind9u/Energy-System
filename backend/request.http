@@ -36,3 +36,13 @@ Content-Type:application/json
 {
     "temperature":25
 }
+
+### 
+PATCH  http://localhost:3000/api/update-user/29
+
+Content-Type: application/json
+
+{
+    "name": "Quang Ly",
+    "account" : "quangga"
+}
