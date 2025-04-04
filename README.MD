@@ -1,4 +1,14 @@
 # React Native & Node.js Project
+◦ Description: This project aims to develop an intelligent system for monitoring and controlling energy
+consumption in households. By leveraging technologies such as IoT and artificial intelligence, the system
+enables real-time tracking of electricity usage across various devices, provides detailed analytics and reports
+to identify inefficient appliances, and supports automated scheduling to optimize energy use. It is designed
+to integrate renewable energy sources like solar power, ensuring a balance between demand and supply. The
+system emphasizes safety, performance, scalability, and user-friendliness, contributing to energy conservation
+and promoting a greener, more sustainable living environment.
+My primary responsibility in this project is coding the core logic functionality base on the given algorithm.
+◦ Language: JavaScript,
+◦ Technologies Used: MVC, HTML, CSS, ReactNative, NodeJs, MySQL, Aiven,  Android Studio...
 
 ## 📌 Công nghệ sử dụng
 - **React Native**
