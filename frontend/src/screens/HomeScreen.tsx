@@ -48,23 +48,18 @@ export default function HomeScreen({ navigation, route }) {
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={handleLogout}
-      >
-        <FontAwesome
-          name="sign-out"
-          size={24}
-          color={currentStyles.text.color}
-        />
-        {/* <Text style={[styles.title, styles.logoutText]}>
+        <TouchableOpacity style={styles.backButton} onPress={handleLogout}>
+          <FontAwesome
+            name="sign-out"
+            size={24}
+            color={currentStyles.text.color}
+          />
+          {/* <Text style={[styles.title, styles.logoutText]}>
           Đăng xuất
         </Text> */}
-      </TouchableOpacity>
+        </TouchableOpacity>
 
-        <Text style={[styles.title, currentStyles.text]}>
-          Trang chủ 
-        </Text>
+        <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
@@ -90,7 +85,10 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]} onPress={() => navigation.navigate("Monitor")}    >
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: "#FF7070" }]}
+          onPress={() => navigation.navigate("Monitor")}
+        >
           <FontAwesome name="eye" size={24} color="black" />
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
@@ -111,16 +109,17 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FFE970" }]}>
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: "#FFE970" }]}
+          onPress={() => navigation.navigate("Report")}
+        >
           <FontAwesome name="line-chart" size={24} color="black" />
           <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
         </TouchableOpacity>
       </View>
 
-
-      <NavBar navigation={navigation} route={{params : {userID}} } />
-
-    </View >
+      <NavBar navigation={navigation} route={{ params: { userID } }} />
+    </View>
   );
 }
 

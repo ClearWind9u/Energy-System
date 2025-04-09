@@ -79,7 +79,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     marginTop: 5,
-  }
+  },
 });
 
 const dayModeStyles = StyleSheet.create({
