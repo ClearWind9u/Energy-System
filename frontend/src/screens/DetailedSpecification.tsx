@@ -23,7 +23,7 @@ export default function DetailedSpecification({ navigation }) {
       </View>
 
                 {/* Chế độ ban ngày / ban đêm */}
-        <View style={[styles.modeContainer , currentStyles.modeContainer]}>
+        {/* <View style={[styles.modeContainer , currentStyles.modeContainer]}>
                   <FontAwesome name="sun-o" size={24} color={isDayMode? "black" : "white"} />
                   <Text style={[styles.modeText, currentStyles.text]} >
                     {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
@@ -33,7 +33,7 @@ export default function DetailedSpecification({ navigation }) {
                     onValueChange={() => setIsDayMode(!isDayMode)}
                     trackColor={{ false: "#ccc", true: "#4cd964" }}
                   />
-        </View>
+        </View> */}
 
      {/* Detail Section */}
      <Text style={[styles.sectionTitle, currentStyles.text]}>Thông số chi tiết</Text>

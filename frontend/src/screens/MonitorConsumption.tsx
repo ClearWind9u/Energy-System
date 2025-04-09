@@ -66,19 +66,6 @@ export default function MonitorConsumption({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      {/* Chế độ ban ngày / ban đêm */}
-      <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-        <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
-        <Text style={[styles.modeText, currentStyles.text]} >
-          {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
-        </Text>
-        <Switch
-          value={isDayMode}
-          onValueChange={() => setIsDayMode(!isDayMode)}
-          trackColor={{ false: "#ccc", true: "#4cd964" }}
-        />
-      </View>
-
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
       <View style={styles.deviceList}>

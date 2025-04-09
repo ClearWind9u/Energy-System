@@ -32,51 +32,61 @@ export default function AccountInfor({ navigation, route }) {
   const handleLogout = async () => {
     try {
       // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
-      await AsyncStorage.removeItem("userToken");
+      await AsyncStorage.removeItem("userID");
       // Điều hướng về màn hình đăng nhập
       navigation.replace("Login");
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
     }
   };
-  
+
+  const fetchUserData = async () => {
+    if (!route.params?.userID) return;
+    try {
+      const response = await fetch(
+        `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${route.params.userID}`
+      );
+      const data = await response.json();
+      if (data.errCode === 0) {
+        setUser(data.user);
+      } else {
+        setError("Không tìm thấy người dùng");
+      }
+
+    } catch (error) {
+      setError("Lỗi khi tải dữ liệu");
+    }
+    setLoading(false);
+  };
+
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      if (!route.params?.userID) return;
-      try {
-        const response = await fetch(
-          `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${route.params.userID}`
-        );
-        const data = await response.json();
-        if (data.errCode === 0) {
-          setUser(data.user);
-        } else {
-          setError("Không tìm thấy người dùng");
-        }
-      } catch (error) {
-        setError("Lỗi khi tải dữ liệu");
-      }
-      setLoading(false);
-    };
-
     fetchUserData();
   }, [route.params?.userID]);
 
-  const updateUser = async () => {
-    axios
-      .patch(
-        `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/update-user/${route.params.userID}`,
-        { account: newAccount, name: newName }
-      )
-      .then(() => {
-        alert("Cập nhật thành công!");
-        setUser({ ...user, account: newAccount, name: newName });
-      })
-      .catch(() => {
-        alert("Lỗi khi cập nhật thông tin!");
-      });
-  };
+
+
+    const updateUser = async () => {
+      axios
+        .patch(
+          `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/update-user/${route.params.userID}`,
+          { account: newAccount, name: newName }
+        )
+        .then(() => {
+          alert("Cập nhật thành công!");
+          setUser({ ...user, account: newAccount, name: newName });
+          setNewAccount("")
+          setNewName("")
+          // fetchUserData();
+        })
+        .catch(() => {
+          alert("Lỗi khi cập nhật thông tin!");
+        });
+        
+    };
+
+
+
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -100,8 +110,8 @@ export default function AccountInfor({ navigation, route }) {
     source={require("../../assets/avar.png")} // Đường dẫn tương đối từ thư mục chứa file này
     style={styles.avatar}
   />
-  <Text style={styles.userName}>{user.name}</Text>
-  <Text style={styles.userEmail}>email@gmail.com</Text>
+  <Text style={[styles.userName, currentStyles.text]}>{user.name}</Text>
+  <Text style={[styles.userEmail, currentStyles.text]}>email@gmail.com</Text>
 </View>
 
 
@@ -112,23 +122,23 @@ export default function AccountInfor({ navigation, route }) {
         ) : error ? (
           <Text style={[ currentStyles.text]}>{error}</Text>
         ) : (
-          <View style={styles.form}>
+          <View style={[styles.form, currentStyles.form]}>
             <TextInput
-              style={styles.input}
+              style={[currentStyles.input, currentStyles.text]}
               value={newName}
               onChangeText={setNewName}
               placeholder={`Họ và tên: ${user.name}`}
               placeholderTextColor="#aaa"
             />
             <TextInput
-              style={styles.input}
+              style={[currentStyles.input, currentStyles.text]}
               placeholder={`Mã số: ${user.id}`}
               placeholderTextColor="#aaa"
               editable={false}
             />
 
             <TextInput
-              style={styles.input}
+              style={[currentStyles.input, currentStyles.text]}
               value={newAccount}
               onChangeText={setNewAccount}
               placeholder={`Tên tài khoản: ${user.account}`}
@@ -136,7 +146,7 @@ export default function AccountInfor({ navigation, route }) {
             />
 
             <TextInput
-              style={styles.input}
+              style={[currentStyles.input, currentStyles.text]}
               placeholder={`Mã cụm : ${user.id_group}`}
               placeholderTextColor="#aaa"
               editable={false}
@@ -238,16 +248,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     fontWeight: "bold",
   },
-  input: {
-    backgroundColor: "#f7f7f7",
-    padding: 12,
-    borderRadius: 10,
-    marginTop: 5,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    marginBottom: 10,
-  },
   saveButton: {
     backgroundColor: "#f7f7f7",
     paddingVertical: 14,
@@ -290,11 +290,35 @@ const dayModeStyles = StyleSheet.create({
   header: { backgroundColor: "white" },
   text: { color: "#000" },
   modeContainer: { backgroundColor: "#f0f0f0" },
+  input: {
+    backgroundColor: "#f7f7f7",
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 5,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 10,
+  }
 });
 
 const nightModeStyles = StyleSheet.create({
   container: { backgroundColor: "#1e1e1e" },
-  header: { backgroundColor: "#2c2c2c" },
+  header: { backgroundColor: "#1e1e1e" },
   text: { color: "white" },
-  modeContainer: { backgroundColor: "#444" },
+  form: {
+
+    backgroundColor: "#1e1e1e",
+    padding: 15,
+    borderRadius: 0,
+  },
+  input: {
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 5,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 10,
+  }
 });

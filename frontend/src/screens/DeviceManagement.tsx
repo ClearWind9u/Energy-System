@@ -134,14 +134,14 @@ export default function DeviceManagement({ navigation }) {
             </View>
 
             {/* Chế độ */}
-            <Text style={[styles.sectionTitle, currentStyles.text]}>Chế độ</Text>
+            {/* <Text style={[styles.sectionTitle, currentStyles.text]}>Chế độ</Text>
             <View style={[styles.modeContainer, currentStyles.modeContainer]}>
                 <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
                 <Text style={[styles.modeText, currentStyles.text]}>
                     {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
                 </Text>
                 <Switch value={isDayMode} onValueChange={() => setIsDayMode(!isDayMode)} />
-            </View>
+            </View> */}
 
             {/* Thêm thiết bị */}
             <TouchableOpacity style={styles.addDevice} onPress={() => setModalVisible(true)}>

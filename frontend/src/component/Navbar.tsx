@@ -34,8 +34,8 @@ export default function NavBar({ navigation,route}) {
 
   return (
     <View style={[styles.container, currentStyles.container]}>
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-             <TouchableOpacity style={styles.navButton}>
+      <View style={[styles.bottomNav, currentStyles.bottomNav]} >
+             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Home")}>
                <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
                <Text style={styles.navText}>Bảng điều khiển</Text>
              </TouchableOpacity>
