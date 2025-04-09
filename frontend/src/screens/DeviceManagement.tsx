@@ -11,46 +11,48 @@ export default function DeviceManagement({ navigation }) {
     const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
     const [modalVisible, setModalVisible] = useState(false);
     const [editModalVisible, setEditModalVisible] = useState(false);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [devices, setDevices] = useState([]);
     const [selectedDevice, setSelectedDevice] = useState(null);
     const [userID, setUserID] = useState(null);
-  
+
     useEffect(() => {
-      const fetchUserID = async () => {
-        try {
-          const storedUserID = await AsyncStorage.getItem("userID");
-          if (storedUserID) {
-            console.log("Retrieved userID at homeScreen:", storedUserID);
-            setUserID(storedUserID);
-          }
-        } catch (error) {
-          console.log("Error retrieving userID:", error);
-        }
-      };
-    
-      fetchUserID();
+        const fetchUserID = async () => {
+            try {
+                const storedUserID = await AsyncStorage.getItem("userID");
+                if (storedUserID) {
+                    console.log("Retrieved userID at homeScreen:", storedUserID);
+                    setUserID(storedUserID);
+                }
+            } catch (error) {
+                console.log("Error retrieving userID:", error);
+            }
+        };
+
+        fetchUserID();
     }, []);
 
     const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
 
     useEffect(() => {
         fetchDevices();
-    }, []);
+    }, []); 
+
+    const getDeviceIcon = (name) => {
+        const lower = name.toLowerCase();
+        if (lower.includes("bulb")) return "lightbulb-o";
+        if (lower.includes("tv") || lower.includes("television")) return "tv";
+        return "gears";
+    };
 
     const fetchDevices = async () => {
         try {
-            var response = await axios.get(`${apiURL}`);
-          let copy = response.data;
-          copy.forEach(item => {
-            if(item.name.toLowerCase().includes("bulb")){
-              item.icon = "lightbulb-o";
-            }
-            else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
-                item.icon = "tv";
-            }
-            else item.icon = "gears";
-          });
-          setDevices(copy);
+            const response = await axios.get(`${apiURL}`);
+            const processed = response.data.map((device) => ({
+                ...device,
+                icon: getDeviceIcon(device.name),
+            }));
+            setDevices(processed);
         } catch (error) {
             console.log("Lỗi khi lấy danh sách thiết bị:", error);
         }
@@ -160,7 +162,10 @@ export default function DeviceManagement({ navigation }) {
                             <TouchableOpacity onPress={() => handleEditDevice(device)}>
                                 <FontAwesome name="pencil" size={20} color="blue" style={styles.actionButton} />
                             </TouchableOpacity>
-                            <TouchableOpacity onPress={() => handleDeleteDevice(device.id)}>
+                            <TouchableOpacity onPress={() => {
+                                setSelectedDevice(device);
+                                setDeleteModalVisible(true);
+                            }}>
                                 <FontAwesome name="trash" size={20} color="red" style={styles.actionButton} />
                             </TouchableOpacity>
                         </View>
@@ -176,9 +181,18 @@ export default function DeviceManagement({ navigation }) {
             />
             {/* Modal Sửa Thiết Bị */}
             <EditDeviceModal visible={editModalVisible} onClose={() => setEditModalVisible(false)} onSubmit={handleUpdateDevice} device={selectedDevice} />
-
+            {/* Modal Xóa Thiết Bị */}
+            <DeleteDeviceModal
+                visible={deleteModalVisible}
+                onClose={() => setDeleteModalVisible(false)}
+                onConfirm={() => {
+                    handleDeleteDevice(selectedDevice?.id);
+                    setDeleteModalVisible(false);
+                }}
+                deviceName={selectedDevice?.name}
+            />
             {/* Thanh điều hướng */}
-            <NavBar navigation={navigation} route={{params : {userID}} } />
+            <NavBar navigation={navigation} route={{ params: { userID } }} />
         </View>
     );
 }
@@ -187,6 +201,13 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
     const [deviceName, setDeviceName] = useState("");
     const [maxEnergy, setMaxEnergy] = useState("");
     const [clusterID, setClusterID] = useState("");
+    useEffect(() => {
+        if (!visible) {
+            setDeviceName("");
+            setMaxEnergy("");
+            setClusterID("");
+        }
+    }, [visible]);   
 
     return (
         <Modal visible={visible} transparent={true} animationType="slide">
@@ -194,24 +215,24 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
                 <View style={styles.modalContainer}>
                     <Text style={styles.modalTitle}>Thêm thiết bị</Text>
 
+                    <Text style={styles.label}>Tên thiết bị:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Tên thiết bị"
                         value={deviceName}
                         onChangeText={setDeviceName}
                     />
 
+                    <Text style={styles.label}>Mức năng lượng tối đa (W):</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="Mức năng lượng tối đa (W)"
                         keyboardType="numeric"
                         value={maxEnergy}
                         onChangeText={setMaxEnergy}
                     />
 
+                    <Text style={styles.label}>ID cụm:</Text>
                     <TextInput
                         style={styles.input}
-                        placeholder="ID cụm"
                         keyboardType="numeric"
                         value={clusterID}
                         onChangeText={setClusterID}
@@ -223,6 +244,10 @@ const AddDeviceModal = ({ visible, onClose, onSubmit }) => {
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() => {
+                                if (!deviceName || !maxEnergy || !clusterID) {
+                                    alert("Vui lòng điền đầy đủ thông tin!");
+                                    return;
+                                }
                                 onSubmit({ name: deviceName, maxEnergy, clusterID });
                                 onClose();
                             }}
@@ -255,14 +280,45 @@ const EditDeviceModal = ({ visible, onClose, onSubmit, device }) => {
             <View style={styles.modalOverlay}>
                 <View style={styles.modalContainer}>
                     <Text style={styles.modalTitle}>Chỉnh sửa thiết bị</Text>
-                    <TextInput style={styles.input} placeholder="Tên thiết bị" value={deviceName} onChangeText={setDeviceName} />
-                    <TextInput style={styles.input} placeholder="Mức năng lượng tối đa (W)" keyboardType="numeric" value={maxEnergy} onChangeText={setMaxEnergy} />
-                    <TextInput style={styles.input} placeholder="ID cụm" keyboardType="numeric" value={clusterID} onChangeText={setClusterID} />
+
+                    <Text style={styles.label}>Tên thiết bị:</Text>
+                    <TextInput
+                        style={styles.input}
+                        value={deviceName}
+                        onChangeText={setDeviceName}
+                    />
+
+                    <Text style={styles.label}>Mức năng lượng tối đa (W):</Text>
+                    <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        value={maxEnergy}
+                        onChangeText={setMaxEnergy}
+                    />
+
+                    <Text style={styles.label}>ID cụm:</Text>
+                    <TextInput
+                        style={styles.input}
+                        keyboardType="numeric"
+                        value={clusterID}
+                        onChangeText={setClusterID}
+                    />
+
                     <View style={styles.buttonContainer}>
                         <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
                             <Text style={styles.buttonText}>Hủy</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={() => { onSubmit({ id: device.id, name: deviceName, maxEnergy, clusterID }); onClose(); }} style={styles.submitButton}>
+                        <TouchableOpacity
+                            onPress={() => {
+                                if (!deviceName || !maxEnergy || !clusterID) {
+                                    alert("Vui lòng điền đầy đủ thông tin!");
+                                    return;
+                                }
+                                onSubmit({ id: device.id, name: deviceName, maxEnergy, clusterID });
+                                onClose();
+                            }}
+                            style={styles.submitButton}
+                        >
                             <Text style={styles.buttonText}>Lưu</Text>
                         </TouchableOpacity>
                     </View>
@@ -272,6 +328,26 @@ const EditDeviceModal = ({ visible, onClose, onSubmit, device }) => {
     );
 };
 
+const DeleteDeviceModal = ({ visible, onClose, onConfirm, deviceName }) => {
+    return (
+        <Modal visible={visible} transparent={true} animationType="fade">
+            <View style={styles.modalOverlay}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.modalTitle}>Xác nhận xóa</Text>
+                    <Text style={styles.label}>Bạn có chắc chắn muốn xóa thiết bị "{deviceName}" không?</Text>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+                            <Text style={styles.buttonText}>Hủy</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={onConfirm} style={styles.submitButton}>
+                            <Text style={styles.buttonText}>Xóa</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </View>
+        </Modal>
+    );
+};
 
 const styles = StyleSheet.create({
     container: {
@@ -347,6 +423,14 @@ const styles = StyleSheet.create({
         fontWeight: "bold",
         marginRight: 10,
     },
+    label: {
+        alignSelf: 'flex-start',
+        marginBottom: 4,
+        marginTop: 12,
+        fontSize: 15,
+        fontWeight: 'bold',
+        color: '#333',
+    },
     bottomNav: {
         flexDirection: "row",
         justifyContent: "space-around",
@@ -387,44 +471,40 @@ const styles = StyleSheet.create({
     modalTitle: {
         fontSize: 20,
         fontWeight: "bold",
-        marginBottom: 15,
+        marginBottom: 10,
+        color: "#333",
         textAlign: "center",
     },
     input: {
         width: "100%",
-        borderWidth: 1,
         borderColor: "#ccc",
-        padding: 12,
-        marginVertical: 10,
-        borderRadius: 10,
-        fontSize: 16,
-        backgroundColor: "#F9F9F9",
+        borderWidth: 1,
+        borderRadius: 8,
+        padding: 10,
+        marginBottom: 10,
     },
     buttonContainer: {
         flexDirection: "row",
         justifyContent: "space-between",
-        marginTop: 15,
+        marginTop: 20,
         width: "100%",
     },
     cancelButton: {
-        flex: 1,
-        backgroundColor: "gray",
-        padding: 12,
-        borderRadius: 10,
-        alignItems: "center",
-        marginRight: 10,
+        backgroundColor: "#ccc",
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
     },
     submitButton: {
-        flex: 1,
         backgroundColor: "#007BFF",
-        padding: 12,
-        borderRadius: 10,
-        alignItems: "center",
+        paddingVertical: 10,
+        paddingHorizontal: 20,
+        borderRadius: 8,
     },
     buttonText: {
         color: "white",
-        fontSize: 16,
         fontWeight: "bold",
+        textAlign: "center",
     },
 });
 

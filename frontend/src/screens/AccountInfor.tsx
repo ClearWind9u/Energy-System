@@ -33,9 +33,8 @@ export default function AccountInfor({ navigation, route }) {
     try {
       // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
       await AsyncStorage.removeItem("userToken");
-  
       // Điều hướng về màn hình đăng nhập
-      navigation.replace("LoginScreen");
+      navigation.replace("Login");
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
     }

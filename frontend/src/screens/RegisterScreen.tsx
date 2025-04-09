@@ -33,7 +33,10 @@ export default function RegisterScreen({ navigation }) {
       const response = await axios.post(apiURL, data);
       if (response.data.errCode != 0) {
         alert(response.data.errMessage);
-      } else navigation.navigate("Login");
+      } else {
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        navigation.navigate("Login");
+      }      
     } catch (error) {
       console.log(error);
     }
@@ -76,7 +79,7 @@ export default function RegisterScreen({ navigation }) {
 
       {/* Ô nhập Account */}
       <View style={styles.inputContainer}>
-        <MaterialIcons name="account" size={24} color="#666" />
+        <MaterialIcons name="account-circle" size={24} color="#666" />
         <TextInput
           style={styles.input}
           placeholder="Tên tài khoản"

@@ -22,7 +22,6 @@ export default function LoginScreen({ navigation }) {
       account: account,
       password: password,
     };
-    // console.log("LOCALHOST: ", process.env.EXPO_PUBLIC_LOCALHOST);
     const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/login`;
     try {
       const response = await axios.post(apiURL, data);

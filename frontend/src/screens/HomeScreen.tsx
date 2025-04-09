@@ -17,6 +17,16 @@ export default function HomeScreen({ navigation, route }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
+  const handleLogout = async () => {
+    try {
+      // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
+      await AsyncStorage.removeItem("userID");
+      // Điều hướng về màn hình đăng nhập
+      navigation.replace("Login");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
+  };
   
   useEffect(() => {
     const fetchUserID = async () => {
@@ -38,16 +48,19 @@ export default function HomeScreen({ navigation, route }) {
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <FontAwesome
-            name="arrow-left"
-            size={24}
-            color={currentStyles.text.color}
-          />
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleLogout}
+      >
+        <FontAwesome
+          name="sign-out"
+          size={24}
+          color={currentStyles.text.color}
+        />
+        {/* <Text style={[styles.title, styles.logoutText]}>
+          Đăng xuất
+        </Text> */}
+      </TouchableOpacity>
 
         <Text style={[styles.title, currentStyles.text]}>
           Trang chủ 
@@ -125,9 +138,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButton: {
-    padding: 10,
-    // position: "absolute", 
-    left: 0
+    flexDirection: "row",
+    alignItems: "center",
+    // position: "absolute",
   },
   title: {
     paddingLeft: 5,
@@ -188,7 +201,11 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     marginTop: 5,
-  }
+  },
+  logoutText: {
+    fontSize: 10,
+    marginLeft: 5,
+  },
 });
 
 const dayModeStyles = StyleSheet.create({
