@@ -100,7 +100,7 @@ exports.handleLogin = (req, res) => {
 exports.getUserById = (req, res) => {
   const { id } = req.params; // Lấy ID từ URL
 
- db.query("SELECT id, account, name, id_group FROM user WHERE id = ?", [id], (err, result) => {
+ db.query("SELECT id, account, name, id_group,password FROM user WHERE id = ?", [id], (err, result) => {
    if (err) {
      return res.status(500).json({ errCode: 1, errMessage: "Lỗi server", error: err.message });
    }
@@ -112,3 +112,27 @@ exports.getUserById = (req, res) => {
    res.status(200).json({ errCode: 0, user: result[0] });
  });
 };
+
+exports.updateUserById = (req, res) => {
+  const { id } = req.params; // Lấy ID từ URL
+  const { account, name } = req.body; // Lấy dữ liệu từ request body
+
+  if (!account || !name) {
+    return res.status(400).json({ errCode: 1, errMessage: "Vui lòng cung cấp đầy đủ account và name" });
+  }
+
+  const query = "UPDATE user SET account = ?, name = ? WHERE id = ?";
+  db.query(query, [account, name, id], (err, result) => {
+    if (err) {
+      return res.status(500).json({ errCode: 1, errMessage: "Lỗi server", error: err.message });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ errCode: 1, errMessage: "Không tìm thấy người dùng" });
+    }
+
+    res.status(200).json({ errCode: 0, message: "Cập nhật thông tin thành công" });
+  });
+};
+
+
