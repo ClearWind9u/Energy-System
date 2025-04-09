@@ -1,34 +1,69 @@
-import React, { useState } from "react";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import React ,{useEffect, useState} from "react";
 import {
-  View,
+  StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
-  Switch,
-  StyleSheet,
+  View,
 } from "react-native";
-import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTheme } from "../navigation/ThemeContext";
+import NavBar from "../component/Navbar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen({ navigation, route }) {
-  const [isDayMode, setIsDayMode] = useState(true);
+
+
+  const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const { userID } = route.params;
+  const [userID, setUserID] = useState(null);
+  const handleLogout = async () => {
+    try {
+      // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
+      await AsyncStorage.removeItem("userID");
+      // Điều hướng về màn hình đăng nhập
+      navigation.replace("Login");
+    } catch (error) {
+      console.error("Lỗi khi đăng xuất:", error);
+    }
+  };
+  
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem("userID");
+        if (storedUserID) {
+          console.log("Retrieved userID at homeScreen:", storedUserID);
+          setUserID(storedUserID);
+        }
+      } catch (error) {
+        console.log("Error retrieving userID:", error);
+      }
+    };
+  
+    fetchUserID();
+  }, []);
+
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.navigate("Login")}
-        >
-          <FontAwesome
-            name="arrow-left"
-            size={24}
-            color={currentStyles.text.color}
-          />
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={handleLogout}
+      >
+        <FontAwesome
+          name="sign-out"
+          size={24}
+          color={currentStyles.text.color}
+        />
+        {/* <Text style={[styles.title, styles.logoutText]}>
+          Đăng xuất
+        </Text> */}
+      </TouchableOpacity>
 
         <Text style={[styles.title, currentStyles.text]}>
-          Trang chủ của ID {userID}
+          Trang chủ 
         </Text>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
@@ -47,7 +82,7 @@ export default function HomeScreen({ navigation, route }) {
         </Text>
         <Switch
           value={isDayMode}
-          onValueChange={(value) => setIsDayMode(value)}
+          onValueChange={() => setIsDayMode(!isDayMode)}
           trackColor={{ false: "#ccc", true: "#4cd964" }}
           thumbColor="white"
         />
@@ -55,7 +90,7 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]}>
+        <TouchableOpacity style={[styles.card, { backgroundColor: "#FF7070" }]} onPress={() => navigation.navigate("Monitor")}    >
           <FontAwesome name="eye" size={24} color="black" />
           <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
         </TouchableOpacity>
@@ -68,7 +103,10 @@ export default function HomeScreen({ navigation, route }) {
           <Text style={[styles.cardText]}>Điều chỉnh mức tiêu thụ</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.card, { backgroundColor: "#708DFF" }]}>
+        <TouchableOpacity
+          style={[styles.card, { backgroundColor: "#708DFF" }]}
+          onPress={() => navigation.navigate("DeviceManagement")}
+        >
           <FontAwesome name="tablet" size={24} color="black" />
           <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
         </TouchableOpacity>
@@ -79,26 +117,10 @@ export default function HomeScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* Thanh điều hướng */}
-      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons
-            name="view-dashboard"
-            size={24}
-            color="white"
-          />
-          <Text style={styles.navText}>Bảng điều khiển</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="microphone" size={24} color="white" />
-        </TouchableOpacity>
+      <NavBar navigation={navigation} route={{params : {userID}} } />
 
-        <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="account" size={24} color="white" />
-        </TouchableOpacity>
-      </View>
-    </View>
+    </View >
   );
 }
 
@@ -115,13 +137,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
   },
-  backButton: { 
-    padding: 10, 
-    // position: "absolute", 
-    left: 0 
+  backButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    // position: "absolute",
   },
   title: {
-    paddingLeft:5,
+    paddingLeft: 5,
     // position: "absolute", 
     fontSize: 24,
     fontWeight: "bold",
@@ -179,6 +201,10 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 12,
     marginTop: 5,
+  },
+  logoutText: {
+    fontSize: 10,
+    marginLeft: 5,
   },
 });
 

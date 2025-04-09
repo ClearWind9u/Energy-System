@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [account, setAccount] = useState("");
@@ -21,7 +22,6 @@ export default function LoginScreen({ navigation }) {
       account: account,
       password: password,
     };
-    // console.log("LOCALHOST: ", process.env.EXPO_PUBLIC_LOCALHOST);
     const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/login`;
     try {
       const response = await axios.post(apiURL, data);
@@ -31,10 +31,14 @@ export default function LoginScreen({ navigation }) {
         alert(
           response.data.errMessage + " with ID user: " + response.data.idUser
         );
+        await AsyncStorage.setItem("userID", response.data.idUser.toString());
+        const userID = await AsyncStorage.getItem("userID");
+        console.log("at login form",userID); // Kết quả: "12345"
         navigation.navigate("Home", {
-          userID: response.data.idUser,
+          userID: userID,
         });
       }
+      console.log(" with ID user at login form:",response.data.idUser);
     } catch (error) {
       console.log(error);
     }

@@ -7,7 +7,6 @@ module.exports = function (api) {
         "inline-dotenv",
         {
           path: "./.env",
-          safe: true,
         },
       ],
     ],

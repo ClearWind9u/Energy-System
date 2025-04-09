@@ -4,13 +4,30 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
-export default function AdjustComsumption({ navigation, route }) {
+import AsyncStorage from "@react-native-async-storage/async-storage";
+export default function MonitorConsumption({ navigation }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [devices, setDevices] = useState([]);
+  const [userID, setUserID] = useState(null);
+  
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const storedUserID = await AsyncStorage.getItem("userID");
+        if (storedUserID) {
+          console.log("Retrieved userID at homeScreen:", storedUserID);
+          setUserID(storedUserID);
+        }
+      } catch (error) {
+        console.log("Error retrieving userID:", error);
+      }
+    };
+  
+    fetchUserID();
+  }, []);
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
-  const userID = route.params?.userID || null;
 
     useEffect(() => {
         fetchDevices();
@@ -18,38 +35,32 @@ export default function AdjustComsumption({ navigation, route }) {
 
     const fetchDevices = async () => {
         try {
-          var response = await axios.get(`${apiURL}`);
-          let copy = response.data;
-          copy.forEach(item => {
-            if(item.name.toLowerCase().includes("bulb")){
-              item.icon = "lightbulb-o";
-            }
-            else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
-                item.icon = "tv";
-            }
-            else item.icon = "gears";
-          });
-          setDevices(copy);
+            var response = await axios.get(`${apiURL}`);
+            let copy = response.data;
+            copy.forEach(item => {
+              if(item.name.toLowerCase().includes("bulb")){
+                item.icon = "lightbulb-o";
+              }
+              else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
+                  item.icon = "tv";
+              }
+              else item.icon = "fan-table";
+            });
+            setDevices(copy);
         } catch (error) {
             console.log("Lỗi khi lấy danh sách thiết bị:", error);
         }
     };
-  // const toggleDevice = (id) => {
-  //   setDevices((prev) =>
-  //     prev.map((device) =>
-  //       device.id === id ? { ...device, isOn: !device.isOn } : device
-  //     )
-  //   );
-  // }
+
 
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>Điều chỉnh mức tiêu thụ</Text>
+        <Text style={[styles.title, currentStyles.text]}>Theo dõi mức tiêu thụ</Text>
         <TouchableOpacity>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
@@ -75,10 +86,7 @@ export default function AdjustComsumption({ navigation, route }) {
           <TouchableOpacity
             key={device.id}
             style={[styles.deviceCard, currentStyles.deviceCard]}
-            onPress={() => navigation.navigate("device",{
-              deviceName: device.name,
-              maxEnergy: device.max_energy,  
-            })}
+            onPress={() => navigation.navigate("Detail")}
           >
             {device.iconFamily === "MaterialCommunityIcons" ? (
               <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
@@ -91,6 +99,7 @@ export default function AdjustComsumption({ navigation, route }) {
         ))}
       </View>
 
+      {/* Thanh điều hướng */}
       <NavBar navigation={navigation} route={{params : {userID}} } />
     </View>
   );
