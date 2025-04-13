@@ -163,8 +163,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   card: {
-    width: "48%", // Chiếm 48% chiều rộng để có 2 cột
-    aspectRatio: 1, // Tỷ lệ khung hình 1:1 để card vuông
+    width: "48%",
+    aspectRatio: 1,
     borderRadius: 15,
     padding: 15,
     marginBottom: 15,

@@ -1,33 +1,24 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import React ,{useEffect, useState} from "react";
-import {
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function HomeScreen({ navigation, route }) {
-
-
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
+
   const handleLogout = async () => {
     try {
-      // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
       await AsyncStorage.removeItem("userID");
-      // Điều hướng về màn hình đăng nhập
       navigation.replace("Login");
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
     }
   };
-  
+
   useEffect(() => {
     const fetchUserID = async () => {
       try {
@@ -40,25 +31,52 @@ export default function HomeScreen({ navigation, route }) {
         console.log("Error retrieving userID:", error);
       }
     };
-  
+
     fetchUserID();
   }, []);
+
+  const features = [
+    {
+      id: 1,
+      name: "Theo dõi mức tiêu thụ",
+      color: "#FF7070", // Đỏ hồng
+      icon: "eye",
+      navigateTo: "Monitor",
+      borderColor: "#FF8F8F",
+    },
+    {
+      id: 2,
+      name: "Điều chỉnh mức tiêu thụ",
+      color: "#A4FF80", // Xanh lá
+      icon: "cog",
+      navigateTo: "Adjust",
+      borderColor: "#BFFF99",
+    },
+    {
+      id: 3,
+      name: "Quản lí thiết bị",
+      color: "#708DFF", // Xanh dương
+      icon: "tablet",
+      navigateTo: "DeviceManagement",
+      borderColor: "#8FA6FF",
+    },
+    {
+      id: 4,
+      name: "Báo cáo và phân tích",
+      color: "#FFE970", // Vàng
+      icon: "line-chart",
+      navigateTo: "Report",
+      borderColor: "#FFF08F",
+    },
+  ];
 
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
-      <View style={[styles.header, currentStyles.container]}>
+      <View style={[styles.header]}>
         <TouchableOpacity style={styles.backButton} onPress={handleLogout}>
-          <FontAwesome
-            name="sign-out"
-            size={24}
-            color={currentStyles.text.color}
-          />
-          {/* <Text style={[styles.title, styles.logoutText]}>
-          Đăng xuất
-        </Text> */}
+          <FontAwesome name="sign-out" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
-
         <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
@@ -67,11 +85,7 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-        <FontAwesome
-          name="sun-o"
-          size={24}
-          color={isDayMode ? "black" : "white"}
-        />
+        <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
         <Text style={[styles.modeText, currentStyles.text]}>
           {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
         </Text>
@@ -85,37 +99,24 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#FF7070" }]}
-          onPress={() => navigation.navigate("Monitor")}
-        >
-          <FontAwesome name="eye" size={24} color="black" />
-          <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#A4FF80" }]}
-          onPress={() => navigation.navigate("Adjust")}
-        >
-          <FontAwesome name="cog" size={24} color="black" />
-          <Text style={[styles.cardText]}>Điều chỉnh mức tiêu thụ</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#708DFF" }]}
-          onPress={() => navigation.navigate("DeviceManagement")}
-        >
-          <FontAwesome name="tablet" size={24} color="black" />
-          <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#FFE970" }]}
-          onPress={() => navigation.navigate("Report")}
-        >
-          <FontAwesome name="line-chart" size={24} color="black" />
-          <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
-        </TouchableOpacity>
+        {features.map((feature) => (
+          <TouchableOpacity
+            key={feature.id}
+            style={[
+              styles.card,
+              currentStyles.card,
+              {
+                backgroundColor: feature.color,
+                borderColor: feature.borderColor,
+              },
+            ]}
+            onPress={() => navigation.navigate(feature.navigateTo)}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.cardText}>{feature.name}</Text>
+            <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} />
+          </TouchableOpacity>
+        ))}
       </View>
 
       <NavBar navigation={navigation} route={{ params: { userID } }} />
@@ -126,7 +127,6 @@ export default function HomeScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingTop: 50,
     paddingHorizontal: 20,
   },
@@ -139,11 +139,8 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    // position: "absolute",
   },
   title: {
-    paddingLeft: 5,
-    // position: "absolute", 
     fontSize: 24,
     fontWeight: "bold",
   },
@@ -153,7 +150,6 @@ const styles = StyleSheet.create({
   modeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F2F2F2",
     padding: 15,
     borderRadius: 10,
     justifyContent: "space-between",
@@ -165,45 +161,30 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "center",
   },
   card: {
-    width: "47%",
-    aspectRatio: 1,
-    borderRadius: 10,
+    width: "100%",
+    height: 130,
+    aspectRatio: 2.5,
+    borderRadius: 15,
+    borderWidth: 1,
+    padding: 20,
+    marginBottom: 10,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
+    justifyContent: "space-between",
   },
   cardText: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    textAlign: "left",
   },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "black",
-    paddingVertical: 15,
-    borderRadius: 10,
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  navButton: {
-    alignItems: "center",
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 5,
-  },
-  logoutText: {
-    fontSize: 10,
-    marginLeft: 5,
+  cardIcon: {
+    color: "#000",
+    marginLeft: 10,
   },
 });
 
@@ -222,17 +203,13 @@ const dayModeStyles = StyleSheet.create({
   },
   card: {
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
   },
-  bottomNav: {
-    backgroundColor: "black",
-  },
 });
 
-// Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
     backgroundColor: "#1E1E1E",
@@ -247,10 +224,10 @@ const nightModeStyles = StyleSheet.create({
     backgroundColor: "#333",
   },
   card: {
-    backgroundColor: "#444",
-  },
-  bottomNav: {
-    backgroundColor: "#333",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
-
