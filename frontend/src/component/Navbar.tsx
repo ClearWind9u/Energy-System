@@ -56,16 +56,18 @@ export default function NavBar({ navigation, route}) {
 
 const styles = StyleSheet.create({
   bottomNav: {
+    // backgroundColor:"yellow",
     flexDirection: "row",
     justifyContent: "space-around",
     paddingVertical: 15,
     borderRadius: 10,
     position: "absolute",
-    marginTop:20,
+    marginTop:50,
     bottom: 20,
     left: 20,
     right: 20,
-    height:80
+    height:80,
+
   },
   navButton: {
     alignItems: "center",
@@ -79,11 +81,16 @@ const styles = StyleSheet.create({
 
 const dayModeStyles = StyleSheet.create({
   container: {
-    backgroundColor:"red",
+    backgroundColor: "transparent", // Đặt trong suốt để không che màn hình
+    position: "absolute", // Cố định vị trí
+    bottom: 0, // Đặt ở dưới cùng
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
+    paddingBottom: 20, // Khoảng cách dưới để tránh bị che bởi notch hoặc thanh điều hướng
   },
   bottomNav: {
-    backgroundColor: "blue",
+    backgroundColor: "black",
     
   },
 });
@@ -91,8 +98,13 @@ const dayModeStyles = StyleSheet.create({
 // Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
-    backgroundColor: "blue",
+    backgroundColor: "transparent", // Đặt trong suốt để không che màn hình
+    position: "absolute", // Cố định vị trí
+    bottom: 0, // Đặt ở dưới cùng
+    left: 0,
+    right: 0,
     paddingHorizontal: 20,
+    paddingBottom: 20, // Khoảng cách dưới để tránh bị che bởi notch hoặc thanh điều hướng
   },
   bottomNav: {
     backgroundColor: "#333",

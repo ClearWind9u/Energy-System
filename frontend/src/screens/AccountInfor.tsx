@@ -231,9 +231,8 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   content: {
-    flex: 1,
     paddingBottom: 20,
-    marginBottom: 250,
+    marginBottom: 20,
     backgroundColor:"white"
   },
   form: {

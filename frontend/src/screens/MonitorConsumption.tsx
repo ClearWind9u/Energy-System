@@ -1,7 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Switch, Text, TouchableOpacity, View, } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -68,7 +68,11 @@ export default function MonitorConsumption({ navigation }) {
 
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
-      <View style={styles.deviceList}>
+
+      <ScrollView contentContainerStyle = {styles.deviceList} 
+                  showsVerticalScrollIndicator ={false}
+                  style={{ maxHeight: 620 }}
+      >
         {devices.map((device) => (
           <TouchableOpacity
             key={device.id}
@@ -84,7 +88,7 @@ export default function MonitorConsumption({ navigation }) {
             <Text style={[styles.deviceCount, currentStyles.text]}>{device.count} Thiết bị</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       {/* Thanh điều hướng */}
       <NavBar navigation={navigation} route={{params : {userID}} } />

@@ -141,7 +141,8 @@ export default function DeviceManagement({ navigation }) {
 
             {/* Danh sách thiết bị */}
             <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
-            <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 500 }}>
+
+            <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 620 }}>
                 {devices.map((device) => (
                     <View key={device.id} style={[styles.deviceCard, currentStyles.deviceCard]}>
                         <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
@@ -183,6 +184,7 @@ export default function DeviceManagement({ navigation }) {
             />
             {/* Thanh điều hướng */}
             <NavBar navigation={navigation} route={{ params: { userID } }} />
+        
         </View>
     );
 }

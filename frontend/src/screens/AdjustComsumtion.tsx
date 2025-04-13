@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
+import { ScrollView } from "react-native-gesture-handler";
 export default function AdjustComsumption({ navigation, route }) {
 
   const { isDayMode, setIsDayMode } = useTheme();
@@ -55,22 +56,10 @@ export default function AdjustComsumption({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* Chế độ ban ngày / ban đêm */}
-      {/* <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-        <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
-        <Text style={[styles.modeText, currentStyles.text]} >
-          {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
-        </Text>
-        <Switch
-          value={isDayMode}
-          onValueChange={() => setIsDayMode(!isDayMode)}
-          trackColor={{ false: "#ccc", true: "#4cd964" }}
-        />
-      </View> */}
-
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
-      <View style={styles.deviceList}>
+
+      <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 620 }}>
         {devices.map((device) => (
           <TouchableOpacity
             key={device.id}
@@ -89,7 +78,7 @@ export default function AdjustComsumption({ navigation, route }) {
             <Text style={[styles.deviceCount, currentStyles.text]}>{device.count} Thiết bị</Text>
           </TouchableOpacity>
         ))}
-      </View>
+      </ScrollView>
 
       <NavBar navigation={navigation} route={{params : {userID}} } />
     </View>
