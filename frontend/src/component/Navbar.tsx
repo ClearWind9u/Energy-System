@@ -10,7 +10,7 @@ import {
 import { useTheme } from "../navigation/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function NavBar({ navigation,route}) {
+export default function NavBar({ navigation, route}) {
 
 
   const { isDayMode, setIsDayMode } = useTheme();
@@ -33,7 +33,7 @@ export default function NavBar({ navigation,route}) {
 
 
   return (
-    <View style={[styles.container, currentStyles.container]}>
+    <View style={[currentStyles.container]}>
       <View style={[styles.bottomNav, currentStyles.bottomNav]} >
              <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Home")}>
                <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
@@ -55,22 +55,17 @@ export default function NavBar({ navigation,route}) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    paddingTop: 50,
-    paddingHorizontal: 20,
-  },
   bottomNav: {
     flexDirection: "row",
     justifyContent: "space-around",
-    backgroundColor: "black",
     paddingVertical: 15,
     borderRadius: 10,
     position: "absolute",
+    marginTop:20,
     bottom: 20,
     left: 20,
     right: 20,
+    height:80
   },
   navButton: {
     alignItems: "center",
@@ -84,17 +79,20 @@ const styles = StyleSheet.create({
 
 const dayModeStyles = StyleSheet.create({
   container: {
-    backgroundColor: "#fff",
+    backgroundColor:"red",
+    paddingHorizontal: 20,
   },
   bottomNav: {
-    backgroundColor: "black",
+    backgroundColor: "blue",
+    
   },
 });
 
 // Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
-    backgroundColor: "#1E1E1E",
+    backgroundColor: "blue",
+    paddingHorizontal: 20,
   },
   bottomNav: {
     backgroundColor: "#333",
