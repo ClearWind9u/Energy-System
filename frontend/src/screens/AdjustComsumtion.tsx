@@ -1,7 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Switch } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import { ScrollView } from "react-native-gesture-handler";
@@ -12,10 +12,13 @@ export default function AdjustComsumption({ navigation, route }) {
   const [devices, setDevices] = useState([]);
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
   const userID = route.params?.userID || null;
+  const [isDeviceOn, setDeviceOn] = useState(false); // Initial state is false (off)
+  const [isOnAutomatic, setOnAutomatic] = useState(false); // Initial state is false (off)
 
   useEffect(() => {
     fetchDevices();
   }, []);
+
 
   const getDeviceIcon = (name) => {
     const lower = name.toLowerCase();
@@ -38,10 +41,12 @@ export default function AdjustComsumption({ navigation, route }) {
     try {
       const response = await axios.get(`${apiURL}`);
       let copy = response.data;
+      console.log(response.data);
       copy.forEach((item) => {
         const { icon, iconFamily } = getDeviceIcon(item.name);
         item.icon = icon;
         item.iconFamily = iconFamily;
+        // isOn : False,
       });
       setDevices(copy);
     } catch (error) {
@@ -68,10 +73,23 @@ export default function AdjustComsumption({ navigation, route }) {
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
 
+            <View style={[styles.modeContainer, currentStyles.modeContainer]}>
+              <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
+              <Text style={[styles.modeText, currentStyles.text]}>
+                {isOnAutomatic ? "Chế độ bật tự động" : "Chế độ bật thủ công"}
+              </Text>
+              <Switch
+                value={isOnAutomatic}
+                onValueChange={() => setOnAutomatic(!isOnAutomatic)}
+                trackColor={{ false: "#ccc", true: "#4cd964" }}
+                thumbColor="white"
+              />
+            </View>
+
       <ScrollView
         contentContainerStyle={styles.deviceList}
         showsVerticalScrollIndicator={false}
-        style={{ maxHeight: 640 }}
+        style={{ maxHeight: 660 }}
       >
         {devices.map((device, index) => (
           <TouchableOpacity
@@ -108,6 +126,16 @@ export default function AdjustComsumption({ navigation, route }) {
             <Text style={[styles.deviceCount, { color: "#fff" }]}>
               {device.count} Thiết bị
             </Text>
+            
+             <View style={[]}>
+                    <Switch
+                      value={isDeviceOn}
+                      onValueChange={() => setDeviceOn(!isDeviceOn)}
+                      trackColor={{ false: "#ccc", true: "#4cd964" }}
+                      thumbColor="white"
+                    />
+                  </View>
+
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -165,6 +193,20 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
   },
+  modeContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 15,
+    height:70,
+    borderRadius: 10,
+    justifyContent: "space-between",
+    marginBottom: 20,
+  },
+  modeText: {
+    fontSize: 16,
+    flex: 1,
+    marginLeft: 10,
+  },
 });
 
 const dayModeStyles = StyleSheet.create({
@@ -184,6 +226,9 @@ const dayModeStyles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+  modeContainer: {
+    backgroundColor: "#F2F2F2",
+  }
 });
 
 const nightModeStyles = StyleSheet.create({
@@ -191,7 +236,7 @@ const nightModeStyles = StyleSheet.create({
     backgroundColor: "#1E1E1E",
   },
   header: {
-    backgroundColor: "#2C2C2C",
+    backgroundColor: "#1E1E1E",
   },
   text: {
     color: "white",
@@ -203,4 +248,7 @@ const nightModeStyles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+  modeContainer: {
+    backgroundColor: "#333",
+  }
 });

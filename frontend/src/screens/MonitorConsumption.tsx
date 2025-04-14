@@ -88,7 +88,7 @@ export default function MonitorConsumption({ navigation }) {
       <ScrollView
         contentContainerStyle={styles.deviceList}
         showsVerticalScrollIndicator={false}
-        style={{ maxHeight: 640 }}
+        style={{ maxHeight: 660 }}
       >
         {devices.map((device, index) => (
           <TouchableOpacity

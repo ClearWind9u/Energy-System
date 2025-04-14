@@ -173,7 +173,7 @@ export default function DeviceManagement({ navigation }) {
       <ScrollView
         contentContainerStyle={styles.deviceList}
         showsVerticalScrollIndicator={false}
-        style={{ maxHeight: 575 }}
+        style={{ maxHeight: 660 }}
       >
         {devices.map((device, index) => (
           <View
