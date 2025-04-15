@@ -1,6 +1,6 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ImageBackground, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -39,34 +39,41 @@ export default function HomeScreen({ navigation, route }) {
     {
       id: 1,
       name: "Theo dõi mức tiêu thụ",
-      color: "#FF7070", // Đỏ hồng
+      backgroundImage: require("../../assets/consumption.jpg"),
+      // color: "#FF7070", // Đỏ hồng
       icon: "eye",
       navigateTo: "Monitor",
-      borderColor: "#FF8F8F",
+      borderColor: "transparent",
+
     },
     {
       id: 2,
       name: "Điều chỉnh mức tiêu thụ",
-      color: "#A4FF80", // Xanh lá
+      // color: "#A4FF80", // Xanh lá
       icon: "cog",
       navigateTo: "Adjust",
-      borderColor: "#BFFF99",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/adjustconsumption.jpg"),
     },
     {
       id: 3,
       name: "Quản lí thiết bị",
-      color: "#708DFF", // Xanh dương
+      // color: "#708DFF", // Xanh dương
       icon: "tablet",
       navigateTo: "DeviceManagement",
-      borderColor: "#8FA6FF",
+      // borderColor: "#8FA6FF",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/ManageDevice.jpg"),
     },
     {
       id: 4,
       name: "Báo cáo và phân tích",
-      color: "#FFE970", // Vàng
+      // color: "#FFE970", // Vàng
       icon: "line-chart",
       navigateTo: "Report",
-      borderColor: "#FFF08F",
+      // borderColor: "#FFF08F",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/report2.jpg"),
     },
   ];
 
@@ -82,6 +89,13 @@ export default function HomeScreen({ navigation, route }) {
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
+
+      {/* <ImageBackground
+  source={require("../../assets/consumption.jpg")}
+  style={{ width: 400, height: 200 }}
+>
+  <Text style={{ color: "white" }}>Test</Text>
+</ImageBackground> */}
 
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
@@ -106,15 +120,27 @@ export default function HomeScreen({ navigation, route }) {
               styles.card,
               currentStyles.card,
               {
-                backgroundColor: feature.color,
-                borderColor: feature.borderColor,
+                // backgroundColor: feature.color,
+                // borderColor: feature.borderColor,
               },
             ]}
             onPress={() => navigation.navigate(feature.navigateTo)}
             activeOpacity={0.8}
           >
-            <Text style={styles.cardText}>{feature.name}</Text>
-            <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} />
+            {/* <Text style={styles.cardText}>{feature.name}</Text>
+            <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} /> */}
+            <ImageBackground
+        source={feature.backgroundImage}
+        style={styles.card}
+        imageStyle={{ borderRadius: 15 }}
+      >
+        <View style={styles.overlay} />
+
+        <View style={styles.cardContent}>
+          <Text style={[styles.cardText, { color: "#fff" }]}>{feature.name}</Text>
+        </View>
+      </ImageBackground>
+
           </TouchableOpacity>
         ))}
       </View>
@@ -165,16 +191,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   card: {
-    width: "100%",
-    height: 130,
-    aspectRatio: 2.5,
-    borderRadius: 15,
-    borderWidth: 1,
-    padding: 20,
     marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
+    width: "100%",
+  height: 130,
+  borderRadius: 20,
+  overflow: "hidden", // để bo góc ảnh
+  justifyContent: "flex-end",
   },
   cardText: {
     fontSize: 18,
@@ -185,6 +209,20 @@ const styles = StyleSheet.create({
   cardIcon: {
     color: "#000",
     marginLeft: 10,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 0.4 là độ mờ, chỉnh tùy ý
+    borderRadius: 15,
+    zIndex: 0,
+  },
+  cardContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    flex: 1,
+    padding: 20,
+    zIndex:1,
   },
 });
 

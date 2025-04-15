@@ -9,6 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ImageBackground
 } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
@@ -61,6 +62,26 @@ export default function DeviceManagement({ navigation }) {
       return { icon: "fan", iconFamily: "MaterialCommunityIcons" };
     }
     return { icon: "gears", iconFamily: "FontAwesome" };
+  };
+
+  const getDeviceBackground = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("fan")) {
+      return require("../../assets/fan.jpg");
+    }
+    if (lower.includes("led")) {
+      return require("../../assets/led.jpg");
+    }
+    if (lower.includes("tv") || lower.includes("television")) {
+      return require("../../assets/tv.png");
+    }
+    if (lower.includes("relay")) {
+      return require("../../assets/relay.jpg");
+    }
+    if (lower.includes("sensor")) {
+      return require("../../assets/SENSOR.jpg");
+    }
+    return require("../../assets/appliance.jpg"); // fallback image
   };
 
   const fetchDevices = async () => {
@@ -179,12 +200,13 @@ export default function DeviceManagement({ navigation }) {
           <View
             key={device.id}
             style={[
-              styles.deviceCard,
-              currentStyles.deviceCard,
-              { backgroundColor: cardColors[index % cardColors.length] },
+              // styles.deviceCard,
+              // currentStyles.deviceCard,
+              styles.deviceCardWrapper,
+              // { backgroundColor: cardColors[index % cardColors.length] },
             ]}
           >
-            {device.iconFamily === "MaterialCommunityIcons" ? (
+            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
               <MaterialCommunityIcons
                 name={device.icon}
                 size={40}
@@ -201,7 +223,6 @@ export default function DeviceManagement({ navigation }) {
             )}
             <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
 
-            {/* Nhóm nút Sửa & Xóa */}
             <View style={styles.buttonGroup}>
               <TouchableOpacity onPress={() => handleEditDevice(device)}>
                 <FontAwesome name="pencil" size={20} color="#fff" style={styles.actionButton} />
@@ -213,10 +234,48 @@ export default function DeviceManagement({ navigation }) {
                 }}
               >
                 <FontAwesome name="trash" size={20} color="#fff" style={styles.actionButton} />
+
+                
               </TouchableOpacity>
-            </View>
+
+
+            </View> */}
+
+            <ImageBackground
+              source={getDeviceBackground(device.name)}
+              imageStyle={{ borderRadius: 15 }}
+              style={[styles.deviceCard, currentStyles.deviceCard]}
+            >
+              <View style={styles.overlay}>
+                <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
+                <Text style={[styles.deviceCount, { color: "#fff" }]}>
+                  {device.count} Thiết bị
+                </Text>
+                <View style={styles.buttonGroup}>
+              <TouchableOpacity onPress={() => handleEditDevice(device)}>
+                <FontAwesome name="pencil" size={20} color="#fff" style={styles.actionButton} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedDevice(device);
+                  setDeleteModalVisible(true);
+                }}
+              >
+                <FontAwesome name="trash" size={20} color="#fff" style={styles.actionButton} />
+
+                
+              </TouchableOpacity>
+
+
+            </View> */
+              </View>
+            </ImageBackground>
+
+            
           </View>
         ))}
+
+        
       </ScrollView>
 
       {/* Modal Thêm Thiết Bị */}
@@ -394,7 +453,7 @@ const DeleteDeviceModal = ({ visible, onClose, onConfirm, deviceName }) => {
   return (
     <Modal visible={visible} transparent={true} animationType="fade">
       <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
+        <View style={[styles.modalContainer]}>
           <Text style={styles.modalTitle}>Xác nhận xóa</Text>
           <Text style={styles.label}>
             Bạn có chắc chắn muốn xóa thiết bị "{deviceName}" không?
@@ -440,13 +499,22 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deviceCard: {
-    width: "47%",
+    // width: "47%",
+    // aspectRatio: 1,
+    // borderRadius: 15,
+    // padding: 15,
+    // marginBottom: 15,
+    // alignItems: "center",
+    // justifyContent: "center",
+    width: "100%",
     aspectRatio: 1,
     borderRadius: 15,
-    padding: 15,
+
     marginBottom: 15,
     alignItems: "center",
+    overflow: "hidden", // để bo góc ảnh
     justifyContent: "center",
+    backgroundColor:"transparent"
   },
   deviceIcon: {
     marginBottom: 10,
@@ -503,6 +571,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
+    backgroundColor:"white"
   },
   modalTitle: {
     fontSize: 20,
@@ -534,9 +603,23 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: "white",
+    color: "black",
     fontWeight: "bold",
     textAlign: "center",
+  },
+  deviceCardWrapper: {
+    width: "48%",
+    marginBottom: 15,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: "100%",
+    height: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    padding: 15,
   },
 });
 
