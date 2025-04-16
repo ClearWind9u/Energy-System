@@ -1,7 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ImageBackground } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -51,6 +51,26 @@ export default function MonitorConsumption({ navigation }) {
     return { icon: "gears", iconFamily: "FontAwesome" };
   };
 
+  const getDeviceBackground = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("fan")) {
+      return require("../../assets/fan.jpg");
+    }
+    if (lower.includes("led")) {
+      return require("../../assets/led.jpg");
+    }
+    if (lower.includes("tv") || lower.includes("television")) {
+      return require("../../assets/tv.png");
+    }
+    if (lower.includes("relay")) {
+      return require("../../assets/relay.jpg");
+    }
+    if (lower.includes("sensor")) {
+      return require("../../assets/SENSOR.jpg");
+    }
+    return require("../../assets/appliance.jpg"); // fallback image
+  };
+
   const fetchDevices = async () => {
     try {
       const response = await axios.get(`${apiURL}`);
@@ -94,14 +114,15 @@ export default function MonitorConsumption({ navigation }) {
           <TouchableOpacity
             key={device.id}
             style={[
-              styles.deviceCard,
-              currentStyles.deviceCard,
-              { backgroundColor: cardColors[index % cardColors.length] },
+              // styles.deviceCard,
+              // currentStyles.deviceCard,
+              styles.deviceCardWrapper,
+              // { backgroundColor: cardColors[index % cardColors.length] },
             ]}
             onPress={() => navigation.navigate("Detail")}
             activeOpacity={0.8}
           >
-            {device.iconFamily === "MaterialCommunityIcons" ? (
+            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
               <MaterialCommunityIcons
                 name={device.icon}
                 size={40}
@@ -119,9 +140,25 @@ export default function MonitorConsumption({ navigation }) {
             <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
             <Text style={[styles.deviceCount, { color: "#fff" }]}>
               {device.count} Thiết bị
-            </Text>
+            </Text> */}
+
+            <ImageBackground
+              source={getDeviceBackground(device.name)}
+              imageStyle={{ borderRadius: 15 }}
+              style={[styles.deviceCard, currentStyles.deviceCard]}
+            >
+              <View style={styles.overlay}>
+                <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
+                <Text style={[styles.deviceCount, { color: "#fff" }]}>
+                  {device.count} Thiết bị
+                </Text>
+              </View>
+            </ImageBackground>
+
           </TouchableOpacity>
         ))}
+
+
       </ScrollView>
 
       {/* Thanh điều hướng */}
@@ -157,19 +194,21 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deviceCard: {
-    width: "48%",
+    width: "100%",
     aspectRatio: 1,
     borderRadius: 15,
-    padding: 15,
+
     marginBottom: 15,
     alignItems: "center",
+    overflow: "hidden", // để bo góc ảnh
     justifyContent: "center",
+    backgroundColor:"transparent"
   },
   deviceIcon: {
     marginBottom: 10,
   },
   deviceName: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 5,
@@ -177,6 +216,20 @@ const styles = StyleSheet.create({
   deviceCount: {
     fontSize: 14,
     textAlign: "center",
+  },
+  deviceCardWrapper: {
+    width: "48%",
+    marginBottom: 15,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: "100%",
+    height: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    padding: 15,
   },
 });
 

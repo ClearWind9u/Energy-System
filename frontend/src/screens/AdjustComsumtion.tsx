@@ -1,7 +1,7 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, Switch } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View, Switch, ImageBackground } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import { ScrollView } from "react-native-gesture-handler";
@@ -14,6 +14,7 @@ export default function AdjustComsumption({ navigation, route }) {
   const userID = route.params?.userID || null;
   const [isDeviceOn, setDeviceOn] = useState(false); // Initial state is false (off)
   const [isOnAutomatic, setOnAutomatic] = useState(false); // Initial state is false (off)
+  
 
   useEffect(() => {
     fetchDevices();
@@ -37,6 +38,29 @@ export default function AdjustComsumption({ navigation, route }) {
     return { icon: "gears", iconFamily: "FontAwesome" }; 
   };
 
+  const getDeviceBackground = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("fan")) {
+      return require("../../assets/fan.jpg");
+    }
+    if (lower.includes("led")) {
+      return require("../../assets/led.jpg");
+    }
+    if (lower.includes("tv") || lower.includes("television")) {
+      return require("../../assets/tv.png");
+    }
+    if (lower.includes("relay")) {
+      return require("../../assets/relay.jpg");
+    }
+    if (lower.includes("sensor")) {
+      return require("../../assets/SENSOR.jpg");
+    }
+    return require("../../assets/appliance.jpg"); // fallback image
+  };
+
+
+  
+
   const fetchDevices = async () => {
     try {
       const response = await axios.get(`${apiURL}`);
@@ -44,6 +68,7 @@ export default function AdjustComsumption({ navigation, route }) {
       console.log(response.data);
       copy.forEach((item) => {
         const { icon, iconFamily } = getDeviceIcon(item.name);
+        const backgroundImage = getDeviceBackground(item.name);
         item.icon = icon;
         item.iconFamily = iconFamily;
         // isOn : False,
@@ -86,18 +111,15 @@ export default function AdjustComsumption({ navigation, route }) {
               />
             </View>
 
-      <ScrollView
-        contentContainerStyle={styles.deviceList}
-        showsVerticalScrollIndicator={false}
-        style={{ maxHeight: 660 }}
-      >
+      <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 660 }}>
         {devices.map((device, index) => (
           <TouchableOpacity
             key={device.id}
             style={[
-              styles.deviceCard,
-              currentStyles.deviceCard,
-              { backgroundColor: cardColors[index % cardColors.length] },
+              // styles.deviceCard,
+              // currentStyles.deviceCard,
+              styles.deviceCardWrapper,
+              // { backgroundColor: cardColors[index % cardColors.length] },
             ]}
             onPress={() =>
               navigation.navigate("device", {
@@ -107,7 +129,7 @@ export default function AdjustComsumption({ navigation, route }) {
             }
             activeOpacity={0.8}
           >
-            {device.iconFamily === "MaterialCommunityIcons" ? (
+            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
               <MaterialCommunityIcons
                 name={device.icon}
                 size={40}
@@ -134,8 +156,25 @@ export default function AdjustComsumption({ navigation, route }) {
                       trackColor={{ false: "#ccc", true: "#4cd964" }}
                       thumbColor="white"
                     />
-                  </View>
-
+                  </View> */}
+<ImageBackground
+  source={getDeviceBackground(device.name)}
+  imageStyle={{ borderRadius: 15 }}
+  style={[styles.deviceCard, currentStyles.deviceCard]}
+>
+  <View style={styles.overlay}>
+    <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
+    <Text style={[styles.deviceCount, { color: "#fff" }]}>
+      {device.count} Thiết bị
+    </Text>
+    <Switch
+      value={isDeviceOn}
+      onValueChange={() => setDeviceOn(!isDeviceOn)}
+      trackColor={{ false: "#ccc", true: "#4cd964" }}
+      thumbColor="white"
+    />
+  </View>
+</ImageBackground>
           </TouchableOpacity>
         ))}
       </ScrollView>
@@ -170,21 +209,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
+    backgroundColor:"transparent"
   },
   deviceCard: {
-    width: "48%",
+    width: "100%",
     aspectRatio: 1,
     borderRadius: 15,
-    padding: 15,
+
     marginBottom: 15,
     alignItems: "center",
+    overflow: "hidden", // để bo góc ảnh
     justifyContent: "center",
+    backgroundColor:"transparent"
   },
   deviceIcon: {
     marginBottom: 10,
   },
   deviceName: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 5,
@@ -206,6 +248,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     flex: 1,
     marginLeft: 10,
+  },
+  deviceCardWrapper: {
+    width: "48%",
+    marginBottom: 15,
+  },
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: "100%",
+    height: "10%",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 15,
+    padding: 15,
   },
 });
 
