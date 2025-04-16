@@ -38,13 +38,14 @@ export default function MonitorConsumption({ navigation }) {
             var response = await axios.get(`${apiURL}`);
             let copy = response.data;
             copy.forEach(item => {
-              if(item.name.toLowerCase().includes("bulb")){
+              if (item.name.toLowerCase().includes("bulb")) {
                 item.icon = "lightbulb-o";
-              }
-              else if(item.name.toLowerCase().includes("tv") || item.name.toLowerCase().includes("television")){
-                  item.icon = "tv";
-              }
-              else item.icon = "fan-table";
+              } else if (
+                item.name.toLowerCase().includes("tv") ||
+                item.name.toLowerCase().includes("television")
+              ) {
+                item.icon = "tv";
+              } else item.icon = "cog";
             });
             setDevices(copy);
         } catch (error) {

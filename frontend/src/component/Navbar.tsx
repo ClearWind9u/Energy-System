@@ -10,9 +10,7 @@ import {
 import { useTheme } from "../navigation/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export default function NavBar({ navigation,route}) {
-
-
+export default function NavBar({ navigation, route }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
@@ -31,26 +29,35 @@ export default function NavBar({ navigation,route}) {
     fetchUserID();
   }, []);
 
-
   return (
     <View style={[styles.container, currentStyles.container]}>
-      <View style={[styles.bottomNav, currentStyles.bottomNav]} >
-             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("Home")}>
-               <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
-               <Text style={styles.navText}>Bảng điều khiển</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton}>
-               <MaterialCommunityIcons name="microphone" size={24} color="white" />
-               <Text style={styles.navText}>Microphone</Text>
-             </TouchableOpacity>
-     
-             <TouchableOpacity style={styles.navButton} onPress={() => navigation.navigate("AccountInfor" ,{userID})}>
-               <MaterialCommunityIcons name="account" size={24} color="white" />
-               <Text style={styles.navText}>Tài khoản</Text>
-             </TouchableOpacity>
-           </View>
-    </View >
+      <View style={[styles.bottomNav, currentStyles.bottomNav]}>
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate("Home")}
+        >
+          <MaterialCommunityIcons
+            name="view-dashboard"
+            size={24}
+            color="white"
+          />
+          <Text style={styles.navText}>Bảng điều khiển</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.navButton}>
+          <MaterialCommunityIcons name="microphone" size={24} color="white" />
+          <Text style={styles.navText}>Microphone</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.navButton}
+          onPress={() => navigation.navigate("AccountInfor", { userID })}
+        >
+          <MaterialCommunityIcons name="account" size={24} color="white" />
+          <Text style={styles.navText}>Tài khoản</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
   );
 }
 
