@@ -3,6 +3,7 @@ import {
   View,
   Text,
   Switch,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
   Image,
@@ -97,6 +98,42 @@ export default function DetailedSpecification({ navigation }) {
       </View>
     );
   }
+
+  // // Logic điều kiện cho LED matrix, quạt, và relay
+  // const isLedMatrixOn = deviceData.voltage_light <= 0.2;
+  // const isFanOn = deviceData.voltage_light > 0.2;
+  // const isRelayOn = deviceData.current < 5;
+
+  // // Dữ liệu card với icon và màu nền
+  const cards = [
+    {
+      title: "Nhiệt độ",
+      value: `${telemetry.temperature ?? "..."} °C`,
+      icon: "thermometer",
+      color: "#FF3B30", // Màu đỏ
+    },
+    {
+      title: "Độ ẩm",
+      value: `${telemetry.humidity ?? "..."} %`,
+      icon: "tint",
+      color: "#00C7BE", // Màu xanh lam
+    },
+    {
+      title: "Hiệu điện thế ánh sáng",
+      value: `${telemetry.voltage_light ?? "..."} V`,
+      // subValue: `LED Matrix: ${isLedMatrixOn ? "Bật" : "Tắt"}, Quạt: ${isFanOn ? "Bật" : "Tắt"}`,
+      icon: "lightbulb-o",
+      color: "#FF6D6A", // Màu hồng
+    },
+    {
+      title: "Dòng điện",
+      value: `${telemetry.current ?? "..."} A`,
+      // subValue: `Relay: ${isRelayOn ? "Bật" : "Tắt"}`,
+      icon: "flash",
+      color: "#5856D6", // Màu tím
+    },
+  ];
+
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
@@ -108,27 +145,14 @@ export default function DetailedSpecification({ navigation }) {
             color={currentStyles.text.color}
           />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>Phòng khách</Text>
+        {/* <Text style={[styles.title, currentStyles.text]}>{deviceData.name}</Text> */}
         <TouchableOpacity>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
 
-      {/* Chế độ ban ngày / ban đêm */}
-      {/* <View style={[styles.modeContainer , currentStyles.modeContainer]}>
-                  <FontAwesome name="sun-o" size={24} color={isDayMode? "black" : "white"} />
-                  <Text style={[styles.modeText, currentStyles.text]} >
-                    {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
-                  </Text>
-                  <Switch
-                    value={isDayMode}
-                    onValueChange={() => setIsDayMode(!isDayMode)}
-                    trackColor={{ false: "#ccc", true: "#4cd964" }}
-                  />
-        </View> */}
-
       {/* Detail Section */}
-      <Text style={[styles.sectionTitle, currentStyles.text]}>
+      {/* <Text style={[styles.sectionTitle, currentStyles.text]}>
         Thông số chi tiết
       </Text>
       <View style={[styles.deviceCard, currentStyles.deviceCard]}>
@@ -147,16 +171,28 @@ export default function DetailedSpecification({ navigation }) {
         <Text style={[currentStyles.text]}>
           Trạng thái: {connected ? "🟢 Kết nối" : "🔴 Mất kết nối"}
         </Text>
-      </View>
+      </View> */}
+
+      {/* Detail Section */}
+      <Text style={[styles.sectionTitle, currentStyles.text]}>Thông số chi tiết</Text>
+      <ScrollView contentContainerStyle={styles.cardContainer}>
+        {cards.map((card, index) => (
+          <View
+            key={index}
+            style={[styles.card, { backgroundColor: card.color }, currentStyles.card]}
+          >
+            <FontAwesome name={card.icon} size={40} color="#fff" style={styles.cardIcon} />
+            <Text style={styles.cardTitle}>{card.title}</Text>
+            <Text style={styles.cardValue}>{card.value}</Text>
+            {/* {card.subValue && <Text style={styles.cardSubValue}>{card.subValue}</Text>} */}
+          </View>
+        ))}
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, currentStyles.bottomNav]}>
         <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons
-            name="view-dashboard"
-            size={24}
-            color="white"
-          />
+          <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
           <Text style={styles.navText}>Bảng điều khiển</Text>
         </TouchableOpacity>
 
@@ -169,7 +205,7 @@ export default function DetailedSpecification({ navigation }) {
           <MaterialCommunityIcons name="account" size={24} color="white" />
           <Text style={styles.navText}>Tài khoản</Text>
         </TouchableOpacity>
-      </View>
+      </View> 
     </View>
   );
 }
@@ -190,19 +226,46 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  deviceCard: {
-    flexDirection: "column",
-    alignItems: "center",
-    backgroundColor: "#F2F2F2",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
+    marginBottom: 15,
+  },
+  cardContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  card: {
+    width: "48%",
+    aspectRatio: 1,
+    borderRadius: 15,
+    padding: 15,
+    marginBottom: 15,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardIcon: {
     marginBottom: 10,
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#fff",
+    textAlign: "center",
+    marginBottom: 5,
+  },
+  cardValue: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    textAlign: "center",
+  },
+  cardSubValue: {
+    fontSize: 12,
+    color: "#fff",
+    textAlign: "center",
+    marginTop: 5,
   },
   bottomNav: {
     flexDirection: "row",
@@ -223,20 +286,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  modeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F2F2F2",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  modeText: {
-    fontSize: 16,
-    flex: 1,
-    marginLeft: 10,
-  },
 });
 
 const dayModeStyles = StyleSheet.create({
@@ -249,12 +298,9 @@ const dayModeStyles = StyleSheet.create({
   text: {
     color: "black",
   },
-  modeContainer: {
-    backgroundColor: "#F2F2F2",
-  },
   card: {
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
@@ -262,18 +308,8 @@ const dayModeStyles = StyleSheet.create({
   bottomNav: {
     backgroundColor: "black",
   },
-  deviceCard: {
-    flexDirection: "column",
-    alignItems: "center",
-    backgroundColor: "#F8F8F8",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
 });
 
-// Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
     backgroundColor: "#1E1E1E",
@@ -284,20 +320,14 @@ const nightModeStyles = StyleSheet.create({
   text: {
     color: "white",
   },
-  modeContainer: {
-    backgroundColor: "#333",
-  },
   card: {
-    backgroundColor: "#444",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
   bottomNav: {
     backgroundColor: "#333",
-  },
-  deviceCard: {
-    backgroundColor: "#333",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    alignItems: "center",
   },
 });

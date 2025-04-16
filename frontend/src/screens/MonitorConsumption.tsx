@@ -1,17 +1,17 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View, ImageBackground } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-export default function MonitorConsumption({ navigation }) {
 
-  const { isDayMode, setIsDayMode } = useTheme();
+export default function MonitorConsumption({ navigation }) {
+  const { isDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [devices, setDevices] = useState([]);
   const [userID, setUserID] = useState(null);
-  
+
   useEffect(() => {
     const fetchUserID = async () => {
       try {
@@ -24,35 +24,70 @@ export default function MonitorConsumption({ navigation }) {
         console.log("Error retrieving userID:", error);
       }
     };
-  
+
     fetchUserID();
   }, []);
+
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
 
-    useEffect(() => {
-        fetchDevices();
-    }, []);
+  useEffect(() => {
+    fetchDevices();
+  }, []);
 
-    const fetchDevices = async () => {
-        try {
-            var response = await axios.get(`${apiURL}`);
-            let copy = response.data;
-            copy.forEach(item => {
-              if (item.name.toLowerCase().includes("bulb")) {
-                item.icon = "lightbulb-o";
-              } else if (
-                item.name.toLowerCase().includes("tv") ||
-                item.name.toLowerCase().includes("television")
-              ) {
-                item.icon = "tv";
-              } else item.icon = "cog";
-            });
-            setDevices(copy);
-        } catch (error) {
-            console.log("Lỗi khi lấy danh sách thiết bị:", error);
-        }
-    };
+  const getDeviceIcon = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("led")) {
+      return { icon: "lightbulb-o", iconFamily: "FontAwesome" };
+    }
+    if (lower.includes("tv") || lower.includes("television")) {
+      return { icon: "tv", iconFamily: "FontAwesome" };
+    }
+    if (lower.includes("relay")) {
+      return { icon: "plug", iconFamily: "FontAwesome" };
+    }
+    if (lower.includes("fan")) {
+      return { icon: "fan", iconFamily: "MaterialCommunityIcons" };
+    }
+    return { icon: "gears", iconFamily: "FontAwesome" };
+  };
 
+  const getDeviceBackground = (name) => {
+    const lower = name.toLowerCase();
+    if (lower.includes("fan")) {
+      return require("../../assets/fan.jpg");
+    }
+    if (lower.includes("led")) {
+      return require("../../assets/led.jpg");
+    }
+    if (lower.includes("tv") || lower.includes("television")) {
+      return require("../../assets/tv.png");
+    }
+    if (lower.includes("relay")) {
+      return require("../../assets/relay.jpg");
+    }
+    if (lower.includes("sensor")) {
+      return require("../../assets/SENSOR.jpg");
+    }
+    return require("../../assets/appliance.jpg"); // fallback image
+  };
+
+  const fetchDevices = async () => {
+    try {
+      const response = await axios.get(`${apiURL}`);
+      let copy = response.data;
+      copy.forEach((item) => {
+        const { icon, iconFamily } = getDeviceIcon(item.name);
+        item.icon = icon;
+        item.iconFamily = iconFamily;
+      });
+      setDevices(copy);
+    } catch (error) {
+      console.log("Lỗi khi lấy danh sách thiết bị:", error);
+    }
+  };
+
+  // Mảng màu cho các card
+  const cardColors = ["#4A90E2", "#FF9500", "#34C759", "#FFCC00"];
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -69,29 +104,67 @@ export default function MonitorConsumption({ navigation }) {
 
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
-      <View style={styles.deviceList}>
-        {devices.map((device) => (
+
+      <ScrollView
+        contentContainerStyle={styles.deviceList}
+        showsVerticalScrollIndicator={false}
+        style={{ maxHeight: 660 }}
+      >
+        {devices.map((device, index) => (
           <TouchableOpacity
             key={device.id}
-            style={[styles.deviceCard, currentStyles.deviceCard]}
+            style={[
+              // styles.deviceCard,
+              // currentStyles.deviceCard,
+              styles.deviceCardWrapper,
+              // { backgroundColor: cardColors[index % cardColors.length] },
+            ]}
             onPress={() => navigation.navigate("Detail")}
+            activeOpacity={0.8}
           >
-            {device.iconFamily === "MaterialCommunityIcons" ? (
-              <MaterialCommunityIcons name="devices" size={24} color={isDayMode ? "black" : "white"} />
+            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
+              <MaterialCommunityIcons
+                name={device.icon}
+                size={40}
+                color="#fff"
+                style={styles.deviceIcon}
+              />
             ) : (
-              <FontAwesome name={device.icon} size={24} color={isDayMode ? "black" : "white"} />
+              <FontAwesome
+                name={device.icon}
+                size={40}
+                color="#fff"
+                style={styles.deviceIcon}
+              />
             )}
-            <Text style={[styles.deviceName, currentStyles.text]}>{device.name}</Text>
-            <Text style={[styles.deviceCount, currentStyles.text]}>{device.count} Thiết bị</Text>
+            <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
+            <Text style={[styles.deviceCount, { color: "#fff" }]}>
+              {device.count} Thiết bị
+            </Text> */}
+
+            <ImageBackground
+              source={getDeviceBackground(device.name)}
+              imageStyle={{ borderRadius: 15 }}
+              style={[styles.deviceCard, currentStyles.deviceCard]}
+            >
+              <View style={styles.overlay}>
+                <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
+                <Text style={[styles.deviceCount, { color: "#fff" }]}>
+                  {device.count} Thiết bị
+                </Text>
+              </View>
+            </ImageBackground>
+
           </TouchableOpacity>
         ))}
-      </View>
+
+
+      </ScrollView>
 
       {/* Thanh điều hướng */}
-      <NavBar navigation={navigation} route={{params : {userID}} } />
+      <NavBar navigation={navigation} route={{ params: { userID } }} />
     </View>
   );
-
 }
 
 const styles = StyleSheet.create({
@@ -99,7 +172,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: 50,
     paddingHorizontal: 20,
-    backgroundColor: "#fff",
   },
   header: {
     flexDirection: "row",
@@ -111,24 +183,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  modeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#F2F2F2",
-    padding: 15,
-    borderRadius: 10,
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  modeText: {
-    fontSize: 16,
-    flex: 1,
-    marginLeft: 10,
-  },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 15,
   },
   deviceList: {
     flexDirection: "row",
@@ -136,47 +194,44 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deviceCard: {
-    width: "47%",
-    backgroundColor: "#F8F8F8",
-    padding: 15,
-    borderRadius: 10,
+    width: "100%",
+    aspectRatio: 1,
+    borderRadius: 15,
+
     marginBottom: 15,
     alignItems: "center",
+    overflow: "hidden", // để bo góc ảnh
+    justifyContent: "center",
+    backgroundColor:"transparent"
   },
   deviceIcon: {
-    marginBottom: 5,
+    marginBottom: 10,
   },
   deviceName: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 5,
   },
   deviceCount: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
+    textAlign: "center",
   },
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "black",
-    paddingVertical: 15,
-    borderRadius: 10,
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
+  deviceCardWrapper: {
+    width: "48%",
+    marginBottom: 15,
   },
-  navButton: {
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    width: "100%",
+    height: "10%",
+    justifyContent: "center",
     alignItems: "center",
+    borderRadius: 15,
+    padding: 15,
   },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 5,
-  },
-
 });
-
 
 const dayModeStyles = StyleSheet.create({
   container: {
@@ -188,30 +243,15 @@ const dayModeStyles = StyleSheet.create({
   text: {
     color: "black",
   },
-  modeContainer: {
-    backgroundColor: "#F2F2F2",
-  },
-  card: {
+  deviceCard: {
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
   },
-  bottomNav: {
-    backgroundColor: "black",
-  },
-  deviceCard: {
-    width: "47%",
-    backgroundColor: "#F8F8F8",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    alignItems: "center",
-  },
 });
 
-// Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
     backgroundColor: "#1E1E1E",
@@ -222,22 +262,11 @@ const nightModeStyles = StyleSheet.create({
   text: {
     color: "white",
   },
-  modeContainer: {
-    backgroundColor: "#333",
-  },
-  card: {
-    backgroundColor: "#444",
-  },
-  bottomNav: {
-    backgroundColor: "#333",
-  },
   deviceCard: {
-    width: "47%",
-    backgroundColor: "#333",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
-

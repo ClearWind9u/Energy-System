@@ -80,3 +80,31 @@ exports.setPower = async (req, res) => {
        return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 }
+exports.addRecord = async (req, res) => {
+  try {
+    const { id_device, current, humidity, temperature, voltage_light, time } =
+      req.body;
+    const [existing] = await db
+      .promise()
+      .query("SELECT * FROM record WHERE id_device = ? AND time = ?", [
+        id_device,
+        time,
+      ]);
+    if (existing.length > 0) {
+      return res
+        .status(200)
+        .json({ message: "Bản ghi đã tồn tại. Không thêm mới." });
+    }
+    await db.promise().query(
+      `INSERT INTO record (id_device, time, current, humidity, temperature, voltage_light)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id_device, time, current, humidity, temperature, voltage_light]
+    );
+    return res.status(201).json({ message: "Thêm bản ghi thành công" });
+  } catch (error) {
+    console.error("Lỗi khi thêm bản ghi:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};

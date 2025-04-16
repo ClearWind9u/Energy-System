@@ -1,33 +1,66 @@
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
-import React ,{useEffect, useState} from "react";
-import {
-  StyleSheet,
-  Switch,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import React, { useEffect, useState } from "react";
+import { ImageBackground, StyleSheet, Switch, Text, TouchableOpacity, View } from "react-native";
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import axios from "axios";
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // tháng bắt đầu từ 0
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 export default function HomeScreen({ navigation, route }) {
-
-
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
+  const [telemetry, setTelemetry] = useState({});
   const handleLogout = async () => {
     try {
-      // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
       await AsyncStorage.removeItem("userID");
-      // Điều hướng về màn hình đăng nhập
       navigation.replace("Login");
     } catch (error) {
       console.error("Lỗi khi đăng xuất:", error);
     }
   };
-  
+  useEffect(() => {
+    const fetchRecord = async () => {
+      try {
+        let apiURL = `${process.env.CORE_IOT_URL}/plugins/telemetry/DEVICE/${process.env.DEVICE_ID}/values/timeseries`;
+        const today = getTodayDate();
+        const token = await AsyncStorage.getItem("userToken");
+        const response = await axios.get(apiURL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        let data = {
+          id_device: process.env.DEVICE_ID,
+          current: parseFloat(response.data.current[0]["value"]).toFixed(0),
+          humidity: parseFloat(response.data.humidity[0]["value"]).toFixed(0),
+          temperature: parseFloat(
+            response.data.temperature[0]["value"]
+          ).toFixed(0),
+          voltage_light: parseFloat(
+            response.data.voltage_light[0]["value"]
+          ).toFixed(0),
+          time: today,
+        };
+        apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/addRecord`;
+        try {
+          const result = await axios.post(apiURL, data);
+          console.log("Response: ", result.data.message);
+        } catch (error) {
+          console.log("Error :", error);
+        }
+      } catch (error) {
+        console.log("Error retrieving record:", error);
+      }
+    };
+    fetchRecord();
+  }, []);
   useEffect(() => {
     const fetchUserID = async () => {
       try {
@@ -40,30 +73,74 @@ export default function HomeScreen({ navigation, route }) {
         console.log("Error retrieving userID:", error);
       }
     };
-  
+
     fetchUserID();
   }, []);
+
+  const features = [
+    {
+      id: 1,
+      name: "Theo dõi mức tiêu thụ",
+      backgroundImage: require("../../assets/consumption.jpg"),
+      // color: "#FF7070", // Đỏ hồng
+      icon: "eye",
+      navigateTo: "Monitor",
+      borderColor: "transparent",
+    },
+    {
+      id: 2,
+      name: "Điều chỉnh mức tiêu thụ",
+      // color: "#A4FF80", // Xanh lá
+      icon: "cog",
+      navigateTo: "Adjust",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/adjustconsumption.jpg"),
+    },
+    {
+      id: 3,
+      name: "Quản lí thiết bị",
+      // color: "#708DFF", // Xanh dương
+      icon: "tablet",
+      navigateTo: "DeviceManagement",
+      // borderColor: "#8FA6FF",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/ManageDevice.jpg"),
+    },
+    {
+      id: 4,
+      name: "Báo cáo và phân tích",
+      // color: "#FFE970", // Vàng
+      icon: "line-chart",
+      navigateTo: "Report",
+      // borderColor: "#FFF08F",
+      borderColor: "transparent",
+      backgroundImage: require("../../assets/report2.jpg"),
+    },
+  ];
 
   return (
     <View style={[styles.container, currentStyles.container]}>
       {/* Header */}
-      <View style={[styles.header, currentStyles.container]}>
+      <View style={[styles.header]}>
         <TouchableOpacity style={styles.backButton} onPress={handleLogout}>
           <FontAwesome
             name="sign-out"
             size={24}
             color={currentStyles.text.color}
           />
-          {/* <Text style={[styles.title, styles.logoutText]}>
-          Đăng xuất
-        </Text> */}
         </TouchableOpacity>
-
         <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
+
+      {/* <ImageBackground
+  source={require("../../assets/consumption.jpg")}
+  style={{ width: 400, height: 200 }}
+>
+  <Text style={{ color: "white" }}>Test</Text>
+</ImageBackground> */}
 
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
@@ -85,37 +162,37 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Các ô chức năng */}
       <View style={styles.grid}>
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#FF7070" }]}
-          onPress={() => navigation.navigate("Monitor")}
-        >
-          <FontAwesome name="eye" size={24} color="black" />
-          <Text style={[styles.cardText]}>Theo dõi mức tiêu thụ</Text>
-        </TouchableOpacity>
+        {features.map((feature) => (
+          <TouchableOpacity
+            key={feature.id}
+            style={[
+              styles.card,
+              currentStyles.card,
+              {
+                // backgroundColor: feature.color,
+                // borderColor: feature.borderColor,
+              },
+            ]}
+            onPress={() => navigation.navigate(feature.navigateTo)}
+            activeOpacity={0.8}
+          >
+            {/* <Text style={styles.cardText}>{feature.name}</Text>
+            <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} /> */}
+            <ImageBackground
+              source={feature.backgroundImage}
+              style={styles.card}
+              imageStyle={{ borderRadius: 15 }}
+            >
+              <View style={styles.overlay} />
 
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#A4FF80" }]}
-          onPress={() => navigation.navigate("Adjust")}
-        >
-          <FontAwesome name="cog" size={24} color="black" />
-          <Text style={[styles.cardText]}>Điều chỉnh mức tiêu thụ</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#708DFF" }]}
-          onPress={() => navigation.navigate("DeviceManagement")}
-        >
-          <FontAwesome name="tablet" size={24} color="black" />
-          <Text style={[styles.cardText]}>Quản lí thiết bị</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.card, { backgroundColor: "#FFE970" }]}
-          onPress={() => navigation.navigate("Report")}
-        >
-          <FontAwesome name="line-chart" size={24} color="black" />
-          <Text style={[styles.cardText]}>Báo cáo và phân tích</Text>
-        </TouchableOpacity>
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardText, { color: "#fff" }]}>
+                  {feature.name}
+                </Text>
+              </View>
+            </ImageBackground>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <NavBar navigation={navigation} route={{ params: { userID } }} />
@@ -126,7 +203,6 @@ export default function HomeScreen({ navigation, route }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
     paddingTop: 50,
     paddingHorizontal: 20,
   },
@@ -139,11 +215,8 @@ const styles = StyleSheet.create({
   backButton: {
     flexDirection: "row",
     alignItems: "center",
-    // position: "absolute",
   },
   title: {
-    paddingLeft: 5,
-    // position: "absolute", 
     fontSize: 24,
     fontWeight: "bold",
   },
@@ -153,7 +226,6 @@ const styles = StyleSheet.create({
   modeContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#F2F2F2",
     padding: 15,
     borderRadius: 10,
     justifyContent: "space-between",
@@ -165,45 +237,42 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: "column",
+    alignItems: "center",
   },
   card: {
-    width: "47%",
-    aspectRatio: 1,
-    borderRadius: 10,
+    marginBottom: 10,
+    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 15,
+    width: "100%",
+  height: 130,
+  borderRadius: 20,
+  overflow: "hidden", // để bo góc ảnh
+  justifyContent: "flex-end",
   },
   cardText: {
-    fontSize: 14,
-    marginTop: 8,
-    textAlign: "center",
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#000",
+    textAlign: "left",
   },
-  bottomNav: {
+  cardIcon: {
+    color: "#000",
+    marginLeft: 10,
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 0.4 là độ mờ, chỉnh tùy ý
+    borderRadius: 15,
+    zIndex: 0,
+  },
+  cardContent: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    backgroundColor: "black",
-    paddingVertical: 15,
-    borderRadius: 10,
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-  },
-  navButton: {
+    justifyContent: "space-between",
     alignItems: "center",
-  },
-  navText: {
-    color: "white",
-    fontSize: 12,
-    marginTop: 5,
-  },
-  logoutText: {
-    fontSize: 10,
-    marginLeft: 5,
+    flex: 1,
+    padding: 20,
+    zIndex:1,
   },
 });
 
@@ -222,17 +291,13 @@ const dayModeStyles = StyleSheet.create({
   },
   card: {
     shadowColor: "#000",
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
   },
-  bottomNav: {
-    backgroundColor: "black",
-  },
 });
 
-// Style cho chế độ ban đêm
 const nightModeStyles = StyleSheet.create({
   container: {
     backgroundColor: "#1E1E1E",
@@ -247,10 +312,10 @@ const nightModeStyles = StyleSheet.create({
     backgroundColor: "#333",
   },
   card: {
-    backgroundColor: "#444",
-  },
-  bottomNav: {
-    backgroundColor: "#333",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowRadius: 5,
+    elevation: 5,
   },
 });
-
