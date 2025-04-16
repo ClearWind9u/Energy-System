@@ -46,3 +46,12 @@ Content-Type: application/json
     "name": "Quang Ly",
     "account" : "quangga"
 }
+###
+POST http://localhost:3000/notification
+Content-Type: application/json
+
+{
+    "id": 1,
+    "device": "switchState[0]",
+    "state" : true 
+}

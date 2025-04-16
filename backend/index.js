@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
 const manageDeviceRouter = require('./routes/manageDeviceRoutes')
+const notificationRouter = require('./routes/notificationRoutes')
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -14,6 +15,7 @@ app.use(bodyParser.json());
 
 app.use("/api", userRoutes);
 app.use("/device", manageDeviceRouter);
+app.use("/notification",notificationRouter)
 
 // // API nhận dữ liệu từ CoreIoT
 // app.post('/webhook', async (req, res) => {
