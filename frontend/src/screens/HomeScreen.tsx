@@ -90,13 +90,6 @@ export default function HomeScreen({ navigation, route }) {
         </TouchableOpacity>
       </View>
 
-      {/* <ImageBackground
-  source={require("../../assets/consumption.jpg")}
-  style={{ width: 400, height: 200 }}
->
-  <Text style={{ color: "white" }}>Test</Text>
-</ImageBackground> */}
-
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
         <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />

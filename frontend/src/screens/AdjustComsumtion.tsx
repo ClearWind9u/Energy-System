@@ -5,6 +5,9 @@ import { StyleSheet, Text, TouchableOpacity, View, Switch, ImageBackground } fro
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import { ScrollView } from "react-native-gesture-handler";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+
 
 export default function AdjustComsumption({ navigation, route }) {
   const { isDayMode } = useTheme();
@@ -13,74 +16,210 @@ export default function AdjustComsumption({ navigation, route }) {
   const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
   const userID = route.params?.userID || null;
   const [isDeviceOn, setDeviceOn] = useState(false); // Initial state is false (off)
-  const [isOnAutomatic, setOnAutomatic] = useState(false); // Initial state is false (off)
+  const [isOnAutomatic, setIsOnAutomatic] = useState(null); // Initial state is false (off)
+  const [token, setUserToken] = useState(null);
+  const [areAllDevicesOn, setAreAllDevicesOn] = useState(false);
+  const [isRelayOn, setRelayOn] = useState(false);
+  const [isFanOn, setFanOn] = useState(false);
+  const [isLedOn, setLedOn] = useState(false);
+  // const [ledKey] = useState()
+
+  const getAutoMode = async () => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.warn("No userToken found");
+        return;
+      }
   
+      const response = await axios.get(
+        `https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      console.log("token",token)
+  
+      const data = response.data;
+      console.log("Device States:", JSON.stringify(data, null, 2));
+      // console.log("Device States:", data);
+  
+      const state4 = data.find((item) => item.key === "switchState[4]")?.value;  // auto or manual
+      console.log("state4",state4 === false ? "che do tu dong false" : "che do thu cong true" )
+      if (state4 !== undefined) {
+        setIsOnAutomatic(!state4);
+      }
+      const state0 = data.find((item) => item.key === "switchState[0]")?.value; // relay
+      const state1 = data.find((item) => item.key === "switchState[1]")?.value; //fan
+      const state2 = data.find((item) => item.key === "switchState[2]")?.value; // ledmatrix
+      const state3 = data.find((item) => item.key === "switchState[3]")?.value;   // switchAll
+      const allKeys = data.map((item) => item.key);
+      console.log("Tất cả các key:", allKeys);
+      
+
+
+      if (state3 === false) { setAreAllDevicesOn(false);  } 
+      if( state0 === true){ setRelayOn(true) } else { setRelayOn(false) }
+
+      if( state1 === true){ setFanOn(true) } else { setFanOn(false) }
+
+      if( state2 === true){ setLedOn(true) } else { setLedOn(false) }
+
+      const DEVICE_MAP = {
+        "switchState[0]": "relay",
+        "switchState[1]": "fan",
+        "switchState[2]": "led",
+        "switchState[3]": "switchAll",
+        "switchState[4]": "autoMode"
+      };
+      console.log("ledddd",ledKey)
+      
+    
+      const deviceName = DEVICE_MAP[ledKey]; // "led"
+      const bg = getDeviceBackground(deviceName);
+      console.log("Background for", deviceName, ":", bg);
+      
+    
+      const getDeviceBackground = (name) => {
+        const lower = name.toLowerCase();
+        if (lower.includes("fan")) {
+          return require("../../assets/fan.jpg");
+        }
+        if (lower.includes("led")) {
+          return require("../../assets/led.jpg");
+        }
+        if (lower.includes("tv") || lower.includes("television")) {
+          return require("../../assets/tv.png");
+        }
+        if (lower.includes("relay")) {
+          return require("../../assets/relay.jpg");
+        }
+        if (lower.includes("sensor")) {
+          return require("../../assets/SENSOR.jpg");
+        }
+        return require("../../assets/appliance.jpg"); // fallback image
+      };
+
+    } catch (error) {
+      if (error.response) {
+        console.log("Server error:", error.response.status, error.response.data);
+      } else {
+        console.log("Other error:", error.message);
+      }
+    }
+  };
 
   useEffect(() => {
-    fetchDevices();
+    // Gọi lần đầu tiên khi component mount
+    getAutoMode();
+    // Gọi lại mỗi 5 giây
+    const interval = setInterval(() => {
+      getAutoMode();
+    }, 5000); // 5000ms = 5 giây
+    // Xóa interval khi component unmount
+    return () => clearInterval(interval);
   }, []);
 
-
-  const getDeviceIcon = (name) => {
-    const lower = name.toLowerCase();
-    if (lower.includes("led")) {
-      return { icon: "lightbulb-o", iconFamily: "FontAwesome" };
-    }
-    if (lower.includes("tv") || lower.includes("television")) {
-      return { icon: "tv", iconFamily: "FontAwesome" };
-    }
-    if (lower.includes("relay")) {
-      return { icon: "plug", iconFamily: "FontAwesome" };
-    }
-    if (lower.includes("fan")) {
-      return { icon: "fan", iconFamily: "MaterialCommunityIcons" };
-    }
-    return { icon: "gears", iconFamily: "FontAwesome" }; 
-  };
-
-  const getDeviceBackground = (name) => {
-    const lower = name.toLowerCase();
-    if (lower.includes("fan")) {
-      return require("../../assets/fan.jpg");
-    }
-    if (lower.includes("led")) {
-      return require("../../assets/led.jpg");
-    }
-    if (lower.includes("tv") || lower.includes("television")) {
-      return require("../../assets/tv.png");
-    }
-    if (lower.includes("relay")) {
-      return require("../../assets/relay.jpg");
-    }
-    if (lower.includes("sensor")) {
-      return require("../../assets/SENSOR.jpg");
-    }
-    return require("../../assets/appliance.jpg"); // fallback image
-  };
-
-
-  
-
-  const fetchDevices = async () => {
+  const turnOffAllDevice  = async (newValue) => {
     try {
-      const response = await axios.get(`${apiURL}`);
-      let copy = response.data;
-      console.log(response.data);
-      copy.forEach((item) => {
-        const { icon, iconFamily } = getDeviceIcon(item.name);
-        const backgroundImage = getDeviceBackground(item.name);
-        item.icon = icon;
-        item.iconFamily = iconFamily;
-        // isOn : False,
-      });
-      setDevices(copy);
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.warn("No userToken found");
+        return;
+      }
+    
+      console.log("outinn", token);
+      console.log("newvalue", newValue);
+
+      const payload = {
+        method: "setStateAll",
+        params: !newValue, 
+      };
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      await axios.post(
+        "https://app.coreiot.io/api/rpc/oneway/8fb0b170-00ce-11f0-a887-6d1a184f2bb5",
+        payload,
+        config
+      );
+      console.log("payload", payload.params);
+
+      console.log("Gửi turnOffAllDevice  thành côngggggg:", newValue);
+
+      setAreAllDevicesOn(newValue); // cập nhật UI sau khi gửi thành công
     } catch (error) {
-      console.log("Lỗi khi lấy danh sách thiết bị:", error);
+      console.log("Lỗi khi gửi chế độ:", error);
     }
   };
 
-  // Mảng màu cho các card
-  const cardColors = ["#4A90E2", "#FF9500", "#34C759", "#FFCC00"];
+
+
+  // const fetchDevices = async () => {
+  //   try {
+  //     const response = await axios.get(`${apiURL}`);
+  //     let copy = response.data;
+  //     // console.log(response.data);
+  //     copy.forEach((item) => {
+  //       const backgroundImage = getDeviceBackground(item.name);
+  //       // item.iconFamily = iconFamily;
+  //     });
+  //     setDevices(copy);
+  //   } catch (error) {
+  //     console.log("Lỗi khi lấy danh sách thiết bị:", error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   fetchDevices();
+  // }, []);
+  
+  // Gửi API khi component load lần đầu
+  const toggleMode = async (newValue) => {
+    try {
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.warn("No userToken found");
+        return;
+      }
+    
+      console.log("outinn", token);
+      console.log("newvalue", newValue);
+
+      const payload = {
+        method: "setStateMode",
+        params: !newValue, 
+      };
+
+      const config = {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      };
+
+      await axios.post(
+        "https://app.coreiot.io/api/rpc/oneway/8fb0b170-00ce-11f0-a887-6d1a184f2bb5",
+        payload,
+        config
+      );
+      console.log("payload", payload.params);
+
+      console.log("Gửi chế độ thành côngggggg:", newValue);
+
+      setIsOnAutomatic(newValue); // cập nhật UI sau khi gửi thành công
+      // getAutoMode();
+    } catch (error) {
+      console.log("Lỗi khi gửi chế độ:", error);
+    }
+  };
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -98,18 +237,35 @@ export default function AdjustComsumption({ navigation, route }) {
       {/* Danh sách thiết bị */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Danh sách thiết bị</Text>
 
-            <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-              <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
-              <Text style={[styles.modeText, currentStyles.text]}>
-                {isOnAutomatic ? "Chế độ bật tự động" : "Chế độ bật thủ công"}
-              </Text>
-              <Switch
-                value={isOnAutomatic}
-                onValueChange={() => setOnAutomatic(!isOnAutomatic)}
-                trackColor={{ false: "#ccc", true: "#4cd964" }}
-                thumbColor="white"
-              />
-            </View>
+        <View style={[styles.modeContainer, currentStyles.modeContainer]}>
+          <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
+          <Text style={[styles.modeText, currentStyles.text]}>
+            {isOnAutomatic ? "Chế độ bật tự động" : "Chế độ bật thủ công"}
+          </Text>
+
+          {/* Switch chọn giữa Tự động và Thủ công */}
+          <Switch
+            value={isOnAutomatic}
+            onValueChange={toggleMode}
+            trackColor={{ false: "#ccc", true: "#4cd964" }}
+            thumbColor="white"
+          />
+        </View>
+
+        {/* Nếu là chế độ thủ công thì mới hiển thị thêm Switch phụ */}
+        {!isOnAutomatic && (
+          <View style={[styles.modeContainer, currentStyles.modeContainer]}>
+            <Text style={[styles.modeText, currentStyles.text]}>
+              {areAllDevicesOn ?  "Chế độ tắt tất cả các thiết bị" :  "Chế độ bật tất cả các thiết bị"}
+            </Text>
+            <Switch
+              value={areAllDevicesOn}
+              onValueChange={turnOffAllDevice}
+              trackColor={{ false: "#ccc", true: "#ff3b30" }}
+              thumbColor="white"
+            />
+          </View>
+        )}
 
       <ScrollView contentContainerStyle={styles.deviceList} showsVerticalScrollIndicator={false} style={{ maxHeight: 660 }}>
         {devices.map((device, index) => (
@@ -129,34 +285,7 @@ export default function AdjustComsumption({ navigation, route }) {
             }
             activeOpacity={0.8}
           >
-            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
-              <MaterialCommunityIcons
-                name={device.icon}
-                size={40}
-                color="#fff"
-                style={styles.deviceIcon}
-              />
-            ) : (
-              <FontAwesome
-                name={device.icon}
-                size={40}
-                color="#fff"
-                style={styles.deviceIcon}
-              />
-            )}
-            <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
-            <Text style={[styles.deviceCount, { color: "#fff" }]}>
-              {device.count} Thiết bị
-            </Text>
-            
-             <View style={[]}>
-                    <Switch
-                      value={isDeviceOn}
-                      onValueChange={() => setDeviceOn(!isDeviceOn)}
-                      trackColor={{ false: "#ccc", true: "#4cd964" }}
-                      thumbColor="white"
-                    />
-                  </View> */}
+
 <ImageBackground
   source={getDeviceBackground(device.name)}
   imageStyle={{ borderRadius: 15 }}
@@ -263,6 +392,14 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     padding: 15,
   },
+  manualControlContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginTop: 16,
+    paddingHorizontal: 20,
+  },
+  
 });
 
 const dayModeStyles = StyleSheet.create({
