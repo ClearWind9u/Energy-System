@@ -31,7 +31,6 @@ export default function NavBar({ navigation, route}) {
     fetchUserID();
   }, []);
 
-
   return (
     <View style={[currentStyles.container]}>
       <View style={[styles.bottomNav, currentStyles.bottomNav]} >

@@ -15,12 +15,11 @@ export const ThemeProvider = ({ children }) => {
       try {
         const response = await axios.post(apiURL, data);
         if (response) {
-          // console.log("Get user token successfully",  response.data["token"].toString());
+          console.log("Get user token successfully");
           await AsyncStorage.setItem(
             "userToken",
             response.data["token"].toString()
           );
-          console.log("usertokennnnnn" , response.data["token"].toString());
           await AsyncStorage.setItem(
             "refreshToken",
             response.data["refreshToken"].toString()

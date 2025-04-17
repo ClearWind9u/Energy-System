@@ -1,85 +1,133 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   Switch,
+  ScrollView,
   TouchableOpacity,
   StyleSheet,
-  ScrollView,
+  Image,
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
-
+import AsyncStorage from "@react-native-async-storage/async-storage";
 export default function DetailedSpecification({ navigation }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
+  const [telemetry, setTelemetry] = useState({});
+  const [connected, setConnected] = useState(false);
+  const [token, setToken] = useState("");
+  const socketRef = useRef(null);
+  const deviceId = "8fb0b170-00ce-11f0-a887-6d1a184f2bb5";
+  const keys = "current,humidity,temperature,voltage_light";
+  useEffect(() => {
+    const getTokenAndConnect = async () => {
+      const savedToken = await AsyncStorage.getItem("userToken");
+      if (savedToken) {
+        setToken(savedToken);
+      }
+    };
+    getTokenAndConnect();
+  }, []);
+  useEffect(() => {
+    if (token) {
+      const socket = new WebSocket(
+        `wss://app.coreiot.io/api/ws/plugins/telemetry?token=${token}`
+      );
+      socketRef.current = socket;
 
-  // Dữ liệu giả định cho các thông số
-  const deviceData = {
-    name: "TV",
-    maxPower: "300 W",
-    energyConsumed: "3500 kWh",
-    usageTime: "1500 h",
-    color: "Màu đỏ",
-    temperature: 25, // °C
-    humidity: 60, // %
-    voltage_light: 0.3, // V
-    current: 4, // A
-  };
+      socket.onopen = () => {
+        setConnected(true);
+        console.log("✅ WebSocket connected");
+        const subscribeMsg = {
+          tsSubCmds: [
+            {
+              entityType: "DEVICE",
+              entityId: deviceId,
+              scope: "Latest telemetry",
+              cmdId: 1,
+              keys: keys,
+            },
+          ],
+          attrSubCmds: [],
+          historyCmds: [],
+        };
+        socket.send(JSON.stringify(subscribeMsg));
+      };
 
-  // Logic điều kiện cho LED matrix, quạt, và relay
-  const isLedMatrixOn = deviceData.voltage_light <= 0.2;
-  const isFanOn = deviceData.voltage_light > 0.2;
-  const isRelayOn = deviceData.current < 5;
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        console.log("Dữ liệu nhận được: ", data.data);
+        if (data.data) {
+          const newTelemetry = { ...telemetry };
+          Object.entries(data.data).forEach(([key, value]) => {
+            if (
+              Array.isArray(value) &&
+              value.length > 0 &&
+              value[0].length === 2
+            ) {
+              newTelemetry[key] = parseFloat(value[0][1]).toFixed(0);
+            }
+          });
+          //console.log("New Telemetry ", newTelemetry);
+          setTelemetry((prev) => ({
+            ...prev,
+            ...newTelemetry,
+          }));
+        }
+      };
 
-  // Dữ liệu card với icon và màu nền
+      socket.onerror = (error) => {
+        console.error("❌ WebSocket error:", error);
+      };
+
+      socket.onclose = () => {
+        setConnected(false);
+        console.warn("⚠️ WebSocket closed");
+      };
+
+      return () => {
+        socket.close();
+      };
+    }
+  }, [token]);
+  if (!token) {
+    return (
+      <View style={[styles.container, currentStyles.container]}>
+        <Text>Đang lấy token...</Text>
+      </View>
+    );
+  }
+
+  // // Logic điều kiện cho LED matrix, quạt, và relay
+  // const isLedMatrixOn = deviceData.voltage_light <= 0.2;
+  // const isFanOn = deviceData.voltage_light > 0.2;
+  // const isRelayOn = deviceData.current < 5;
+
+  // // Dữ liệu card với icon và màu nền
   const cards = [
     {
-      title: "Công suất tối đa",
-      value: deviceData.maxPower,
-      icon: "bolt",
-      color: "#4A90E2", // Màu xanh giống "French"
-    },
-    {
-      title: "Lượng điện tiêu thụ",
-      value: deviceData.energyConsumed,
-      icon: "plug",
-      color: "#FF9500", // Màu cam giống "Portuguese"
-    },
-    {
-      title: "Thời gian sử dụng",
-      value: deviceData.usageTime,
-      icon: "clock-o",
-      color: "#34C759", // Màu xanh lá giống "Italian"
-    },
-    {
-      title: "Màu đang bật",
-      value: deviceData.color,
-      icon: "paint-brush",
-      color: "#FFCC00", // Màu vàng giống "German"
-    },
-    {
       title: "Nhiệt độ",
-      value: `${deviceData.temperature}°C`,
+      value: `${telemetry.temperature ?? "..."} °C`,
       icon: "thermometer",
       color: "#FF3B30", // Màu đỏ
     },
     {
       title: "Độ ẩm",
-      value: `${deviceData.humidity}%`,
+      value: `${telemetry.humidity ?? "..."} %`,
       icon: "tint",
       color: "#00C7BE", // Màu xanh lam
     },
     {
       title: "Hiệu điện thế ánh sáng",
-      value: `${deviceData.voltage_light} V`,
+      value: `${telemetry.voltage_light ?? "..."} V`,
       // subValue: `LED Matrix: ${isLedMatrixOn ? "Bật" : "Tắt"}, Quạt: ${isFanOn ? "Bật" : "Tắt"}`,
       icon: "lightbulb-o",
       color: "#FF6D6A", // Màu hồng
     },
     {
       title: "Dòng điện",
-      value: `${deviceData.current} A`,
+      value: `${telemetry.current ?? "..."} A`,
       // subValue: `Relay: ${isRelayOn ? "Bật" : "Tắt"}`,
       icon: "flash",
       color: "#5856D6", // Màu tím
@@ -91,13 +139,39 @@ export default function DetailedSpecification({ navigation }) {
       {/* Header */}
       <View style={[styles.header, currentStyles.container]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
+          <FontAwesome
+            name="arrow-left"
+            size={24}
+            color={currentStyles.text.color}
+          />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>{deviceData.name}</Text>
+        {/* <Text style={[styles.title, currentStyles.text]}>{deviceData.name}</Text> */}
         <TouchableOpacity>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
+
+      {/* Detail Section */}
+      {/* <Text style={[styles.sectionTitle, currentStyles.text]}>
+        Thông số chi tiết
+      </Text>
+      <View style={[styles.deviceCard, currentStyles.deviceCard]}>
+        <Text style={[currentStyles.text]}>
+          Độ ẩm: {telemetry.humidity ?? "..."} %
+        </Text>
+        <Text style={[currentStyles.text]}>
+          Nhiệt độ: {telemetry.temperature ?? "..."} °C
+        </Text>
+        <Text style={[currentStyles.text]}>
+          Dòng điện: {telemetry.current ?? "..."} A
+        </Text>
+        <Text style={[currentStyles.text]}>
+          Điệp áp: {telemetry.voltage_light ?? "..."} V
+        </Text>
+        <Text style={[currentStyles.text]}>
+          Trạng thái: {connected ? "🟢 Kết nối" : "🔴 Mất kết nối"}
+        </Text>
+      </View> */}
 
       {/* Detail Section */}
       <Text style={[styles.sectionTitle, currentStyles.text]}>Thông số chi tiết</Text>
@@ -110,7 +184,7 @@ export default function DetailedSpecification({ navigation }) {
             <FontAwesome name={card.icon} size={40} color="#fff" style={styles.cardIcon} />
             <Text style={styles.cardTitle}>{card.title}</Text>
             <Text style={styles.cardValue}>{card.value}</Text>
-            {card.subValue && <Text style={styles.cardSubValue}>{card.subValue}</Text>}
+            {/* {card.subValue && <Text style={styles.cardSubValue}>{card.subValue}</Text>} */}
           </View>
         ))}
       </ScrollView>
@@ -131,7 +205,7 @@ export default function DetailedSpecification({ navigation }) {
           <MaterialCommunityIcons name="account" size={24} color="white" />
           <Text style={styles.navText}>Tài khoản</Text>
         </TouchableOpacity>
-      </View>
+      </View> 
     </View>
   );
 }

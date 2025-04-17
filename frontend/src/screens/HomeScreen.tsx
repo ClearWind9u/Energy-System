@@ -4,12 +4,19 @@ import { ImageBackground, StyleSheet, Switch, Text, TouchableOpacity, View } fro
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import axios from "axios";
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // tháng bắt đầu từ 0
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 export default function HomeScreen({ navigation, route }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [userID, setUserID] = useState(null);
-
+  const [telemetry, setTelemetry] = useState({});
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem("userID");
@@ -18,7 +25,42 @@ export default function HomeScreen({ navigation, route }) {
       console.error("Lỗi khi đăng xuất:", error);
     }
   };
-
+  useEffect(() => {
+    const fetchRecord = async () => {
+      try {
+        let apiURL = `${process.env.CORE_IOT_URL}/plugins/telemetry/DEVICE/${process.env.DEVICE_ID}/values/timeseries`;
+        const today = getTodayDate();
+        const token = await AsyncStorage.getItem("userToken");
+        const response = await axios.get(apiURL, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        let data = {
+          id_device: process.env.DEVICE_ID,
+          current: parseFloat(response.data.current[0]["value"]).toFixed(0),
+          humidity: parseFloat(response.data.humidity[0]["value"]).toFixed(0),
+          temperature: parseFloat(
+            response.data.temperature[0]["value"]
+          ).toFixed(0),
+          voltage_light: parseFloat(
+            response.data.voltage_light[0]["value"]
+          ).toFixed(0),
+          time: today,
+        };
+        apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/addRecord`;
+        try {
+          const result = await axios.post(apiURL, data);
+          console.log("Response: ", result.data.message);
+        } catch (error) {
+          console.log("Error :", error);
+        }
+      } catch (error) {
+        console.log("Error retrieving record:", error);
+      }
+    };
+    fetchRecord();
+  }, []);
   useEffect(() => {
     const fetchUserID = async () => {
       try {
@@ -44,7 +86,6 @@ export default function HomeScreen({ navigation, route }) {
       icon: "eye",
       navigateTo: "Monitor",
       borderColor: "transparent",
-
     },
     {
       id: 2,
@@ -82,7 +123,11 @@ export default function HomeScreen({ navigation, route }) {
       {/* Header */}
       <View style={[styles.header]}>
         <TouchableOpacity style={styles.backButton} onPress={handleLogout}>
-          <FontAwesome name="sign-out" size={24} color={currentStyles.text.color} />
+          <FontAwesome
+            name="sign-out"
+            size={24}
+            color={currentStyles.text.color}
+          />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
         <TouchableOpacity style={styles.iconButton}>
@@ -92,7 +137,11 @@ export default function HomeScreen({ navigation, route }) {
 
       {/* Chế độ ban ngày */}
       <View style={[styles.modeContainer, currentStyles.modeContainer]}>
-        <FontAwesome name="sun-o" size={24} color={isDayMode ? "black" : "white"} />
+        <FontAwesome
+          name="sun-o"
+          size={24}
+          color={isDayMode ? "black" : "white"}
+        />
         <Text style={[styles.modeText, currentStyles.text]}>
           {isDayMode ? "Chế độ ban ngày" : "Chế độ ban đêm"}
         </Text>
@@ -123,17 +172,18 @@ export default function HomeScreen({ navigation, route }) {
             {/* <Text style={styles.cardText}>{feature.name}</Text>
             <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} /> */}
             <ImageBackground
-        source={feature.backgroundImage}
-        style={styles.card}
-        imageStyle={{ borderRadius: 15 }}
-      >
-        <View style={styles.overlay} />
+              source={feature.backgroundImage}
+              style={styles.card}
+              imageStyle={{ borderRadius: 15 }}
+            >
+              <View style={styles.overlay} />
 
-        <View style={styles.cardContent}>
-          <Text style={[styles.cardText, { color: "#fff" }]}>{feature.name}</Text>
-        </View>
-      </ImageBackground>
-
+              <View style={styles.cardContent}>
+                <Text style={[styles.cardText, { color: "#fff" }]}>
+                  {feature.name}
+                </Text>
+              </View>
+            </ImageBackground>
           </TouchableOpacity>
         ))}
       </View>
