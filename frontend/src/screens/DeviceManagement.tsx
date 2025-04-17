@@ -16,7 +16,7 @@ import NavBar from "../component/Navbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function DeviceManagement({ navigation }) {
-  const { isDayMode } = useTheme();
+  const { isDayMode, apiRequestWithToken } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [modalVisible, setModalVisible] = useState(false);
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -30,7 +30,7 @@ export default function DeviceManagement({ navigation }) {
       try {
         const storedUserID = await AsyncStorage.getItem("userID");
         if (storedUserID) {
-          console.log("Retrieved userID at homeScreen:", storedUserID);
+          console.log("Retrieved userID at DeviceManagement:", storedUserID);
           setUserID(storedUserID);
         }
       } catch (error) {
@@ -41,7 +41,7 @@ export default function DeviceManagement({ navigation }) {
     fetchUserID();
   }, []);
 
-  const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device`;
+  const apiURL = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D";
 
   useEffect(() => {
     fetchDevices();
@@ -81,21 +81,55 @@ export default function DeviceManagement({ navigation }) {
     if (lower.includes("sensor")) {
       return require("../../assets/SENSOR.jpg");
     }
-    return require("../../assets/appliance.jpg"); // fallback image
+    return require("../../assets/appliance.jpg");
   };
 
   const fetchDevices = async () => {
     try {
-      const response = await axios.get(`${apiURL}`);
-      const processed = response.data.map((device) => {
-        const { icon, iconFamily } = getDeviceIcon(device.name);
-        return {
-          ...device,
-          icon,
-          iconFamily,
-        };
-      });
-      setDevices(processed);
+      const token = await AsyncStorage.getItem("userToken");
+      if (!token) {
+        console.warn("No userToken found");
+        return;
+      }
+
+      const response = apiRequestWithToken
+        ? await apiRequestWithToken(() =>
+            axios.get(apiURL, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            })
+          )
+        : await axios.get(apiURL, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+      const deviceMap = {
+        "switchState[0]": "Relay",
+        "switchState[1]": "Fan",
+        "switchState[2]": "LED",
+      };
+
+      const devices = response.data
+        .filter((item) => ["switchState[0]", "switchState[1]", "switchState[2]"].includes(item.key))
+        .map((item, index) => {
+          const deviceName = deviceMap[item.key] || "Unknown Device";
+          const { icon, iconFamily } = getDeviceIcon(deviceName);
+          return {
+            id: index + 1,
+            name: deviceName,
+            icon,
+            iconFamily,
+            state: item.value,
+            lastUpdateTs: item.lastUpdateTs,
+            max_energy: null,
+            id_group: null,
+          };
+        });
+
+      setDevices(devices);
     } catch (error) {
       console.log("Lỗi khi lấy danh sách thiết bị:", error);
     }
@@ -108,7 +142,8 @@ export default function DeviceManagement({ navigation }) {
       id_group: newDevice.clusterID,
     };
     try {
-      const response = await axios.post(`${apiURL}/addDevice`, data);
+      // Note: This endpoint is from the old API and may not work with the new API
+      const response = await axios.post(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/addDevice`, data);
       if (response.status === 200) {
         alert("Thêm thiết bị thành công!");
         fetchDevices();
@@ -117,6 +152,7 @@ export default function DeviceManagement({ navigation }) {
       }
     } catch (error) {
       console.log("Lỗi khi thêm thiết bị:", error);
+      alert("Không thể thêm thiết bị: API không hỗ trợ");
     }
   };
 
@@ -133,7 +169,8 @@ export default function DeviceManagement({ navigation }) {
       id_group: updatedDevice.clusterID,
     };
     try {
-      const response = await axios.post(`${apiURL}/editDevice`, data);
+      // Note: This endpoint is from the old API and may not work with the new API
+      const response = await axios.post(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/editDevice`, data);
       if (response.status === 200) {
         alert("Cập nhật thiết bị thành công!");
         fetchDevices();
@@ -143,12 +180,14 @@ export default function DeviceManagement({ navigation }) {
       }
     } catch (error) {
       console.log("Lỗi khi cập nhật thiết bị:", error);
+      alert("Không thể cập nhật thiết bị: API không hỗ trợ");
     }
   };
 
   const handleDeleteDevice = async (deviceId) => {
     try {
-      const response = await axios.delete(`${apiURL}/deleteDevice`, {
+      // Note: This endpoint is from the old API and may not work with the new API
+      const response = await axios.delete(`http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/deleteDevice`, {
         params: { device_id: deviceId },
       });
       if (response.status === 200) {
@@ -159,11 +198,11 @@ export default function DeviceManagement({ navigation }) {
       }
     } catch (error) {
       console.log("Lỗi khi xóa thiết bị:", error);
+      alert("Không thể xóa thiết bị: API không hỗ trợ");
     }
   };
 
-  // Mảng màu cho các card
-  const cardColors = ["#4A90E2", "#FF9500", "#34C759", "#FFCC00"];
+  const cardColors = ["#4A90E2", "#FF9500", "#34C759"];
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -196,51 +235,14 @@ export default function DeviceManagement({ navigation }) {
         showsVerticalScrollIndicator={false}
         style={{ maxHeight: 660 }}
       >
+        {devices.length === 0 && (
+          <Text style={[styles.deviceName, currentStyles.text]}>Không có thiết bị nào</Text>
+        )}
         {devices.map((device, index) => (
           <View
             key={device.id}
-            style={[
-              // styles.deviceCard,
-              // currentStyles.deviceCard,
-              styles.deviceCardWrapper,
-              // { backgroundColor: cardColors[index % cardColors.length] },
-            ]}
+            style={[styles.deviceCardWrapper]}
           >
-            {/* {device.iconFamily === "MaterialCommunityIcons" ? (
-              <MaterialCommunityIcons
-                name={device.icon}
-                size={40}
-                color="#fff"
-                style={styles.deviceIcon}
-              />
-            ) : (
-              <FontAwesome
-                name={device.icon}
-                size={40}
-                color="#fff"
-                style={styles.deviceIcon}
-              />
-            )}
-            <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
-
-            <View style={styles.buttonGroup}>
-              <TouchableOpacity onPress={() => handleEditDevice(device)}>
-                <FontAwesome name="pencil" size={20} color="#fff" style={styles.actionButton} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedDevice(device);
-                  setDeleteModalVisible(true);
-                }}
-              >
-                <FontAwesome name="trash" size={20} color="#fff" style={styles.actionButton} />
-
-                
-              </TouchableOpacity>
-
-
-            </View> */}
-
             <ImageBackground
               source={getDeviceBackground(device.name)}
               imageStyle={{ borderRadius: 15 }}
@@ -248,34 +250,23 @@ export default function DeviceManagement({ navigation }) {
             >
               <View style={styles.overlay}>
                 <Text style={[styles.deviceName, { color: "#fff" }]}>{device.name}</Text>
-                <Text style={[styles.deviceCount, { color: "#fff" }]}>
-                  {device.count} Thiết bị
-                </Text>
                 <View style={styles.buttonGroup}>
-              <TouchableOpacity onPress={() => handleEditDevice(device)}>
-                <FontAwesome name="pencil" size={20} color="#fff" style={styles.actionButton} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => {
-                  setSelectedDevice(device);
-                  setDeleteModalVisible(true);
-                }}
-              >
-                <FontAwesome name="trash" size={20} color="#fff" style={styles.actionButton} />
-
-                
-              </TouchableOpacity>
-
-
-            </View> */
+                  <TouchableOpacity onPress={() => handleEditDevice(device)}>
+                    <FontAwesome name="pencil" size={20} color="#fff" style={styles.actionButton} />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setSelectedDevice(device);
+                      setDeleteModalVisible(true);
+                    }}
+                  >
+                    <FontAwesome name="trash" size={20} color="#fff" style={styles.actionButton} />
+                  </TouchableOpacity>
+                </View>
               </View>
             </ImageBackground>
-
-            
           </View>
         ))}
-
-        
       </ScrollView>
 
       {/* Modal Thêm Thiết Bị */}
@@ -388,8 +379,8 @@ const EditDeviceModal = ({ visible, onClose, onSubmit, device }) => {
   useEffect(() => {
     if (device) {
       setDeviceName(device.name);
-      setMaxEnergy(device.max_energy?.toString());
-      setClusterID(device.id_group?.toString());
+      setMaxEnergy(device.max_energy?.toString() || "");
+      setClusterID(device.id_group?.toString() || "");
     }
   }, [device]);
 
@@ -499,36 +490,26 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   deviceCard: {
-    // width: "47%",
-    // aspectRatio: 1,
-    // borderRadius: 15,
-    // padding: 15,
-    // marginBottom: 15,
-    // alignItems: "center",
-    // justifyContent: "center",
     width: "100%",
     aspectRatio: 1,
     borderRadius: 15,
-
     marginBottom: 15,
     alignItems: "center",
-    overflow: "hidden", // để bo góc ảnh
+    overflow: "hidden",
     justifyContent: "center",
-    backgroundColor:"transparent"
-  },
-  deviceIcon: {
-    marginBottom: 10,
+    backgroundColor: "transparent",
   },
   deviceName: {
-    fontSize: 16,
+    fontSize: 19,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   buttonGroup: {
     flexDirection: "row",
     alignItems: "center",
     gap: 20,
+    marginTop: 10,
   },
   actionButton: {
     padding: 5,
@@ -571,7 +552,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowRadius: 5,
     elevation: 5,
-    backgroundColor:"white"
   },
   modalTitle: {
     fontSize: 20,
@@ -603,7 +583,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: "black",
+    color: "white",
     fontWeight: "bold",
     textAlign: "center",
   },
@@ -613,9 +593,9 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
     width: "100%",
-    height: "10%",
+    height: "100%",
     justifyContent: "center",
     alignItems: "center",
     borderRadius: 15,

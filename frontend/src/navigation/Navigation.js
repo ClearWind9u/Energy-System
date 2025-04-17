@@ -8,7 +8,6 @@ import DeviceSrceen from "../screens/DeviceScreen";
 import DetailedSpecification from "../screens/DetailedSpecification";
 import DeviceManagement from "../screens/DeviceManagement";
 import { ThemeProvider } from "./ThemeContext";
-import MonitorConsumption from "../screens/MonitorConsumption";
 import AccountInfor from "../screens/AccountInfor";
 import ReportScreen from "../screens/ReportScreen";
 
@@ -26,7 +25,6 @@ export default function AppNavigator() {
           <Stack.Screen name="device" component={DeviceSrceen} />
           <Stack.Screen name="Detail" component={DetailedSpecification} />
           <Stack.Screen name="DeviceManagement" component={DeviceManagement} />
-          <Stack.Screen name="Monitor" component={MonitorConsumption} />
           <Stack.Screen name="AccountInfor" component={AccountInfor} />
           <Stack.Screen name="Report" component={ReportScreen} />
         </Stack.Navigator>

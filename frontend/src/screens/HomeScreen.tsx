@@ -31,6 +31,7 @@ export default function HomeScreen({ navigation, route }) {
         let apiURL = `${process.env.CORE_IOT_URL}/plugins/telemetry/DEVICE/${process.env.DEVICE_ID}/values/timeseries`;
         const today = getTodayDate();
         const token = await AsyncStorage.getItem("userToken");
+        console.log("token: ", token);
         const response = await axios.get(apiURL, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -80,11 +81,11 @@ export default function HomeScreen({ navigation, route }) {
   const features = [
     {
       id: 1,
-      name: "Theo dõi mức tiêu thụ",
+      name: "Theo dõi cảm biến",
       backgroundImage: require("../../assets/consumption.jpg"),
       // color: "#FF7070", // Đỏ hồng
       icon: "eye",
-      navigateTo: "Monitor",
+      navigateTo: "Detail",
       borderColor: "transparent",
     },
     {
