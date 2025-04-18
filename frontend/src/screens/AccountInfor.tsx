@@ -98,7 +98,7 @@ export default function AccountInfor({ navigation, route }) {
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Thông tin người dùng</Text>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate("Notification")} >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>

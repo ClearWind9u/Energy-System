@@ -212,7 +212,7 @@ export default function DeviceManagement({ navigation }) {
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Quản lí thiết bị</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Notification")}  >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>

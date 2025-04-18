@@ -4,12 +4,12 @@ import LoginScreen from "../screens/LoginScreen";
 import RegisterScreen from "../screens/RegisterScreen";
 import HomeScreen from "../screens/HomeScreen";
 import AdjustComsumption from "../screens/AdjustComsumtion";
-import DeviceSrceen from "../screens/DeviceScreen";
 import DetailedSpecification from "../screens/DetailedSpecification";
 import DeviceManagement from "../screens/DeviceManagement";
 import { ThemeProvider } from "./ThemeContext";
 import AccountInfor from "../screens/AccountInfor";
 import ReportScreen from "../screens/ReportScreen";
+import Notification from "../screens/Notification";
 
 const Stack = createStackNavigator();
 
@@ -22,11 +22,11 @@ export default function AppNavigator() {
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Adjust" component={AdjustComsumption} />
-          <Stack.Screen name="device" component={DeviceSrceen} />
           <Stack.Screen name="Detail" component={DetailedSpecification} />
           <Stack.Screen name="DeviceManagement" component={DeviceManagement} />
           <Stack.Screen name="AccountInfor" component={AccountInfor} />
           <Stack.Screen name="Report" component={ReportScreen} />
+          <Stack.Screen name="Notification" component={Notification} />
         </Stack.Navigator>
       </NavigationContainer>
     </ThemeProvider>

@@ -14,7 +14,7 @@ export default function AdjustComsumption({ navigation, route }) {
   const [isOnAutomatic, setIsOnAutomatic] = useState(false); // switchState[4]: false = auto, true = manual
   const [areAllDevicesOn, setAreAllDevicesOn] = useState(false); // switchState[3]
   const userID = route.params?.userID || null;
-
+// api getAllDeviceState
   const apiURL = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D";
 
   const getDeviceBackground = (name) => {
@@ -97,6 +97,9 @@ export default function AdjustComsumption({ navigation, route }) {
           };
         });
 
+      const state0 = response.data.find((item) => item.key === "switchState[0]")?.value;
+      const state1 = response.data.find((item) => item.key === "switchState[1]")?.value;
+      const state2 = response.data.find((item) => item.key === "switchState[2]")?.value;
       const state3 = response.data.find((item) => item.key === "switchState[3]")?.value;
       const state4 = response.data.find((item) => item.key === "switchState[4]")?.value;
 
@@ -145,6 +148,8 @@ export default function AdjustComsumption({ navigation, route }) {
             }
           );
 
+
+
       console.log("Set mode to:", newValue ? "Auto" : "Manual");
       setIsOnAutomatic(newValue);
     } catch (error) {
@@ -189,6 +194,23 @@ export default function AdjustComsumption({ navigation, route }) {
             }
           );
 
+          const payloadAddNoti = {
+            id: 1,
+            device: "switchState[3]",
+            state: newValue
+          }
+
+          const addNewNotification = await axios.post(
+            `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/notification`,
+            payloadAddNoti,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+          
+
       console.log("Set all devices to:", newValue ? "On" : "Off");
       setAreAllDevicesOn(newValue);
       setDevices((prev) =>
@@ -206,6 +228,9 @@ export default function AdjustComsumption({ navigation, route }) {
         console.warn("No userToken found");
         return;
       }
+      console.log("token", token);
+
+     const deviceMethod = ""
 
       const payload = {
         method: "setValue",
@@ -239,6 +264,8 @@ export default function AdjustComsumption({ navigation, route }) {
             }
           );
 
+      
+
       console.log(`Set ${device.name} to:`, newValue ? "On" : "Off");
       setDevices((prev) =>
         prev.map((d) =>
@@ -264,7 +291,7 @@ export default function AdjustComsumption({ navigation, route }) {
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Điều chỉnh mức tiêu thụ</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("Notification")} >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
@@ -287,7 +314,7 @@ export default function AdjustComsumption({ navigation, route }) {
       {!isOnAutomatic && (
         <View style={[styles.modeContainer, currentStyles.modeContainer]}>
           <Text style={[styles.modeText, currentStyles.text]}>
-            {areAllDevicesOn ? "Tắt tất cả thiết bị" : "Bật tất cả thiết bị"}
+            {areAllDevicesOn ? "Đang ở chế độ bật tất cả thiết bị" : "Đang ở chế độ tắt tất cả thiết bị"}
           </Text>
           <Switch
             value={areAllDevicesOn}

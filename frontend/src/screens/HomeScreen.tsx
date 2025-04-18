@@ -131,7 +131,7 @@ export default function HomeScreen({ navigation, route }) {
           />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Trang chủ</Text>
-        <TouchableOpacity style={styles.iconButton}>
+        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.navigate("Notification")}  >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>

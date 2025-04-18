@@ -145,11 +145,13 @@ export default function DetailedSpecification({ navigation }) {
             color={currentStyles.text.color}
           />
         </TouchableOpacity>
-        {/* <Text style={[styles.title, currentStyles.text]}>{deviceData.name}</Text> */}
-        <TouchableOpacity>
+        <Text style={[styles.title, currentStyles.text]}>Thông số chi tiết</Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Notification")}  >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
+
+
 
       {/* Detail Section */}
       {/* <Text style={[styles.sectionTitle, currentStyles.text]}>
@@ -174,7 +176,7 @@ export default function DetailedSpecification({ navigation }) {
       </View> */}
 
       {/* Detail Section */}
-      <Text style={[styles.sectionTitle, currentStyles.text]}>Thông số chi tiết</Text>
+      {/* <Text style={[styles.cardTitleitle, currentStyles.text]}>Thông số chi tiết</Text> */}
       <ScrollView contentContainerStyle={styles.cardContainer}>
         {cards.map((card, index) => (
           <View
