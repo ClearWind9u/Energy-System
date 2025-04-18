@@ -230,14 +230,18 @@ export default function AdjustComsumption({ navigation, route }) {
       }
       console.log("token", token);
 
-     const deviceMethod = ""
+      console.log(device.name,"device dang thay doi thanh",newValue)
+
+
+     let deviceMethod = "";
+     if (device.name === "Fan" ){ deviceMethod = "setStateFan"; } 
+     else if( device.name === "Relay" )  {deviceMethod = "setStateRelay"}
+     else if( device.name === "LED") { deviceMethod = "setStateLedMatrix" }
 
       const payload = {
-        method: "setValue",
-        params: {
-          key: device.key,
-          value: newValue,
-        },
+        method: deviceMethod,
+        params: newValue,
+        
       };
 
       const response = apiRequestWithToken
@@ -272,6 +276,10 @@ export default function AdjustComsumption({ navigation, route }) {
           d.id === device.id ? { ...d, state: newValue } : d
         )
       );
+
+      devices.forEach((d) => console.log("state hiện tại",d.name, d.state));
+
+      
     } catch (error) {
       console.log(`Error toggling ${device.name}:`, error);
     }
