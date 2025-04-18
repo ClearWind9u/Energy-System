@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   Image,
+  ImageBackground
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
@@ -111,12 +112,14 @@ export default function DetailedSpecification({ navigation }) {
       value: `${telemetry.temperature ?? "..."} °C`,
       icon: "thermometer",
       color: "#FF3B30", // Màu đỏ
+      backgroundImage: require("../../assets/temp.jpg"),
     },
     {
       title: "Độ ẩm",
       value: `${telemetry.humidity ?? "..."} %`,
       icon: "tint",
       color: "#00C7BE", // Màu xanh lam
+      backgroundImage: require("../../assets/humid.jpg"),
     },
     {
       title: "Hiệu điện thế ánh sáng",
@@ -124,6 +127,7 @@ export default function DetailedSpecification({ navigation }) {
       // subValue: `LED Matrix: ${isLedMatrixOn ? "Bật" : "Tắt"}, Quạt: ${isFanOn ? "Bật" : "Tắt"}`,
       icon: "lightbulb-o",
       color: "#FF6D6A", // Màu hồng
+      backgroundImage: require("../../assets/von3.jpg"),
     },
     {
       title: "Dòng điện",
@@ -131,6 +135,7 @@ export default function DetailedSpecification({ navigation }) {
       // subValue: `Relay: ${isRelayOn ? "Bật" : "Tắt"}`,
       icon: "flash",
       color: "#5856D6", // Màu tím
+      backgroundImage: require("../../assets/dien3.jpg"),
     },
   ];
 
@@ -177,7 +182,7 @@ export default function DetailedSpecification({ navigation }) {
 
       {/* Detail Section */}
       {/* <Text style={[styles.cardTitleitle, currentStyles.text]}>Thông số chi tiết</Text> */}
-      <ScrollView contentContainerStyle={styles.cardContainer}>
+      {/* <ScrollView contentContainerStyle={styles.cardContainer}>
         {cards.map((card, index) => (
           <View
             key={index}
@@ -186,10 +191,28 @@ export default function DetailedSpecification({ navigation }) {
             <FontAwesome name={card.icon} size={40} color="#fff" style={styles.cardIcon} />
             <Text style={styles.cardTitle}>{card.title}</Text>
             <Text style={styles.cardValue}>{card.value}</Text>
-            {/* {card.subValue && <Text style={styles.cardSubValue}>{card.subValue}</Text>} */}
+
           </View>
         ))}
-      </ScrollView>
+      </ScrollView> */}
+
+        <ScrollView contentContainerStyle={styles.cardContainer}>
+          {cards.map((card, index) => (
+            <ImageBackground
+              key={index}
+              source={card.backgroundImage}
+              imageStyle={{ borderRadius: 15 }}
+              style={[styles.card, currentStyles.card]}
+            >
+              <View style={styles.overlay}>
+                <FontAwesome name={card.icon} size={40} color="#fff" style={styles.cardIcon} />
+                <Text style={styles.cardTitle}>{card.title}</Text>
+                <Text style={styles.cardValue}>{card.value}</Text>
+              </View>
+            </ImageBackground>
+          ))}
+        </ScrollView>
+
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, currentStyles.bottomNav]}>
@@ -238,15 +261,15 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "space-between",
   },
-  card: {
-    width: "48%",
-    aspectRatio: 1,
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 15,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  // card: {
+  //   width: "48%",
+  //   aspectRatio: 1,
+  //   borderRadius: 15,
+  //   padding: 15,
+  //   marginBottom: 15,
+  //   alignItems: "center",
+  //   justifyContent: "center",
+  // },
   cardIcon: {
     marginBottom: 10,
   },
@@ -288,6 +311,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
+  card: {
+    width: 175,
+    height: 180,
+    margin: 5,
+    borderRadius: 15,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  overlay: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0, 0, 0, 0.1)', // lớp overlay đen mờ
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
 });
 
 const dayModeStyles = StyleSheet.create({
