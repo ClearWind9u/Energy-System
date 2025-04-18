@@ -9,6 +9,7 @@ import DeviceManagement from "../screens/DeviceManagement";
 import { ThemeProvider } from "./ThemeContext";
 import AccountInfor from "../screens/AccountInfor";
 import ReportScreen from "../screens/ReportScreen";
+import ChartScreen from "../screens/ChartScreen";
 import Notification from "../screens/Notification";
 
 const Stack = createStackNavigator();
@@ -26,6 +27,7 @@ export default function AppNavigator() {
           <Stack.Screen name="DeviceManagement" component={DeviceManagement} />
           <Stack.Screen name="AccountInfor" component={AccountInfor} />
           <Stack.Screen name="Report" component={ReportScreen} />
+          <Stack.Screen name="Chart" component={ChartScreen} />
           <Stack.Screen name="Notification" component={Notification} />
         </Stack.Navigator>
       </NavigationContainer>
