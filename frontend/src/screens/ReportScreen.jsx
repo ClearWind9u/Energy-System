@@ -1,5 +1,5 @@
 import { FontAwesome } from "@expo/vector-icons";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -12,138 +12,77 @@ import {
 import { useTheme } from "../navigation/ThemeContext";
 import NavBar from "../component/Navbar";
 import { Calendar } from "react-native-calendars";
+import axios from "axios";
 
 export default function ReportScreen({ navigation, route }: any) {
   const { isDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const { userID } = route.params || {};
 
+  const today = new Date().toISOString().split("T")[0];
   const [activeFilter, setActiveFilter] = useState("Ngày");
   const [expandedItem, setExpandedItem] = useState(null);
   const [selectedAdvice, setSelectedAdvice] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("2025-02-14");
+  const [selectedDate, setSelectedDate] = useState(today);
   const [showCalendar, setShowCalendar] = useState(false);
+  const [reportData, setReportData] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Dữ liệu mẫu với ngày cụ thể (để lọc theo ngày, tháng, năm)
-  const reportData = [
-    {
-      date: "2025-02-14",
-      displayDate: "Thứ hai, 14/02/2025",
-      usage: 50,
-      recommendation: "Khuyến nghị tiết kiệm điện",
-      status: "Khuyến nghị",
-      devices: [
-        { name: "Điều hòa", usage: "20 kWh" },
-        { name: "Tủ lạnh", usage: "15 kWh" },
-        { name: "Máy giặt", usage: "10 kWh" },
-      ],
-    },
-    {
-      date: "2025-02-14",
-      displayDate: "Thứ hai, 14/02/2025",
-      usage: 50,
-      recommendation: "Đã sử dụng",
-      status: "Đã sử dụng",
-      devices: [
-        { name: "Điều hòa", usage: "25 kWh" },
-        { name: "Tivi", usage: "10 kWh" },
-        { name: "Quạt", usage: "5 kWh" },
-      ],
-    },
-    {
-      date: "2025-02-15",
-      displayDate: "Thứ ba, 15/02/2025",
-      usage: 45,
-      recommendation: "Khuyến nghị tiết kiệm điện",
-      status: "Khuyến nghị",
-      devices: [
-        { name: "Điều hòa", usage: "20 kWh" },
-        { name: "Tủ lạnh", usage: "15 kWh" },
-        { name: "Máy giặt", usage: "10 kWh" },
-      ],
-    },
-    {
-      date: "2025-03-01",
-      displayDate: "Thứ bảy, 01/03/2025",
-      usage: 60,
-      recommendation: "Đã sử dụng",
-      status: "Đã sử dụng",
-      devices: [
-        { name: "Điều hòa", usage: "25 kWh" },
-        { name: "Tivi", usage: "10 kWh" },
-        { name: "Quạt", usage: "5 kWh" },
-      ],
-    },
-    {
-      date: "2024-12-31",
-      displayDate: "Thứ ba, 31/12/2024",
-      usage: 55,
-      recommendation: "Khuyến nghị tiết kiệm điện",
-      status: "Khuyến nghị",
-      devices: [
-        { name: "Điều hòa", usage: "20 kWh" },
-        { name: "Tủ lạnh", usage: "15 kWh" },
-        { name: "Máy giặt", usage: "10 kWh" },
-      ],
-    },
-  ];
+  const deviceNameMap = {
+    "8fb0b170-00ce-11f0-a887-6d1a184f2bb5": "Thiết bị của hệ thống",
+  };
 
-  // Hàm lọc và nhóm dữ liệu theo Ngày, Tháng, Năm
-  const getFilteredData = () => {
-    const selectedDateObj = new Date(selectedDate);
-    const selectedYear = selectedDateObj.getFullYear();
-    const selectedMonth = selectedDateObj.getMonth() + 1; // getMonth() trả về 0-11
-    const selectedDay = selectedDateObj.getDate();
+  const filterMap = {
+    "Ngày": "day",
+    "Tháng": "month",
+    "Năm": "year",
+  };
 
-    if (activeFilter === "Ngày") {
-      return reportData.filter((item) => item.date === selectedDate);
-    } else if (activeFilter === "Tháng") {
-      // Nhóm theo tháng và năm
-      const filtered = reportData.filter((item) => {
-        const itemDate = new Date(item.date);
-        return (
-          itemDate.getFullYear() === selectedYear &&
-          itemDate.getMonth() + 1 === selectedMonth
-        );
-      });
-
-      // Tổng hợp dữ liệu theo tháng
-      if (filtered.length === 0) return [];
-      const totalUsage = filtered.reduce((sum, item) => sum + item.usage, 0);
-      return [
-        {
-          date: `${selectedMonth}/${selectedYear}`,
-          displayDate: `Tháng ${selectedMonth}, ${selectedYear}`,
-          usage: totalUsage,
-          recommendation: filtered[0].recommendation, // Lấy lời khuyên của ngày đầu tiên trong tháng
-          status: filtered[0].status,
-          devices: filtered.flatMap((item) => item.devices), // Tổng hợp tất cả thiết bị
+  const fetchRecords = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/records`;
+      const response = await axios.get(apiURL, {
+        params: {
+          filter: filterMap[activeFilter],
+          date: selectedDate,
         },
-      ];
-    } else {
-      // Nhóm theo năm
-      const filtered = reportData.filter((item) => {
-        const itemDate = new Date(item.date);
-        return itemDate.getFullYear() === selectedYear;
       });
-
-      // Tổng hợp dữ liệu theo năm
-      if (filtered.length === 0) return [];
-      const totalUsage = filtered.reduce((sum, item) => sum + item.usage, 0);
-      return [
-        {
-          date: `${selectedYear}`,
-          displayDate: `Năm ${selectedYear}`,
-          usage: totalUsage,
-          recommendation: filtered[0].recommendation, // Lấy lời khuyên của ngày đầu tiên trong năm
-          status: filtered[0].status,
-          devices: filtered.flatMap((item) => item.devices), // Tổng hợp tất cả thiết bị
-        },
-      ];
+      const transformedData = response.data.map((item) => ({
+        date: item.date,
+        displayDate: item.displayDate,
+        usage: item.devices
+          .reduce(
+            (sum, device) => sum + (device.current * device.voltage_light) / 1000,
+            0
+          )
+          .toFixed(2),
+        recommendation: "Khuyến nghị tiết kiệm điện",
+        status: "Khuyến nghị",
+        devices: item.devices.map((device) => ({
+          name: deviceNameMap[device.name] || device.name,
+          usage: ((device.current * device.voltage_light) / 1000).toFixed(2) + " kWh",
+          temperature: device.temperature.toFixed(1) + " °C",
+          humidity: device.humidity.toFixed(1) + " %",
+          current: device.current.toFixed(1) + " A",
+          voltage_light: device.voltage_light.toFixed(0) + " V",
+          time: new Date(device.time).toLocaleDateString("vi-VN"),
+        })),
+      }));
+      setReportData(transformedData);
+    } catch (err) {
+      console.error("Error fetching records:", err.message);
+      setError("Không thể tải dữ liệu. Vui lòng thử lại.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const filteredData = getFilteredData();
+  useEffect(() => {
+    fetchRecords();
+  }, [activeFilter, selectedDate]);
 
   const toggleExpand = (index: number) => {
     setExpandedItem(expandedItem === index ? null : index);
@@ -156,18 +95,16 @@ export default function ReportScreen({ navigation, route }: any) {
 
   return (
     <View style={[styles.container, currentStyles.container]}>
-      {/* Header */}
       <View style={[styles.header]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>Báo cáo và phân tích</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Notification")}>
+        <TouchableOpacity>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
 
-      {/* Ngày hiện tại với nút mở calendar */}
       <TouchableOpacity
         style={[styles.dateContainer, currentStyles.dateContainer]}
         onPress={() => setShowCalendar(true)}
@@ -188,7 +125,6 @@ export default function ReportScreen({ navigation, route }: any) {
         </Text>
       </TouchableOpacity>
 
-      {/* Calendar Modal */}
       <Modal
         transparent={true}
         visible={showCalendar}
@@ -222,7 +158,6 @@ export default function ReportScreen({ navigation, route }: any) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      {/* Bộ lọc (Ngày, Tháng, Năm) */}
       <View style={styles.filterContainer}>
         {["Ngày", "Tháng", "Năm"].map((filter) => (
           <TouchableOpacity
@@ -245,21 +180,17 @@ export default function ReportScreen({ navigation, route }: any) {
         ))}
       </View>
 
-      {/* Tiêu đề phần chi tiết */}
-      <View style={[styles.detailHeader, currentStyles.detailHeader]}>
-        <Text style={[styles.detailTitle, currentStyles.detailTitle]}>
-          Chi tiết tiêu thụ điện năng
-        </Text>
-      </View>
-
-      {/* Danh sách báo cáo */}
       <ScrollView style={styles.reportList}>
-        {filteredData.length === 0 ? (
+        {loading ? (
+          <Text style={[styles.noDataText, currentStyles.text]}>Đang tải...</Text>
+        ) : error ? (
+          <Text style={[styles.noDataText, currentStyles.text]}>{error}</Text>
+        ) : reportData.length === 0 ? (
           <Text style={[styles.noDataText, currentStyles.text]}>
             Không có dữ liệu cho khoảng thời gian này
           </Text>
         ) : (
-          filteredData.map((item, index) => (
+          reportData.map((item, index) => (
             <View key={index}>
               <View style={[styles.reportItem, currentStyles.reportItem]}>
                 <TouchableOpacity onPress={() => toggleExpand(index)}>
@@ -271,12 +202,7 @@ export default function ReportScreen({ navigation, route }: any) {
                       <Text style={[styles.reportUsage, currentStyles.text]}>
                         {item.usage} kWh
                       </Text>
-                      <View
-                        style={[
-                          styles.statusBar,
-                          { backgroundColor: item.status === "Khuyến nghị" ? "#34C759" : "#FF3B30" },
-                        ]}
-                      />
+                      
                     </View>
                   </View>
                 </TouchableOpacity>
@@ -297,19 +223,43 @@ export default function ReportScreen({ navigation, route }: any) {
                 </TouchableOpacity>
               </View>
 
-              {/* Danh sách thiết bị */}
               {expandedItem === index && (
                 <View style={[styles.deviceList, currentStyles.deviceList]}>
-                  {item.devices.map((device: any, deviceIndex: number) => (
-                    <View key={deviceIndex} style={styles.deviceItem}>
-                      <Text style={[styles.deviceName, currentStyles.text]}>
-                        {device.name}
-                      </Text>
-                      <Text style={[styles.deviceUsage, currentStyles.text]}>
-                        {device.usage}
-                      </Text>
-                    </View>
-                  ))}
+                  {item.devices
+                    .slice()
+                    .sort((a, b) => {
+                      const [da, ma, ya] = a.time.split("/");
+                      const [db, mb, yb] = b.time.split("/");
+                      const dateA = new Date(`${ya}-${ma}-${da}`);
+                      const dateB = new Date(`${yb}-${mb}-${db}`);
+                      return dateA.getTime() - dateB.getTime();
+                    })
+                    .map((device: any, deviceIndex: number) => (
+                      <View key={deviceIndex} style={styles.deviceItem}>
+                        <View style={styles.deviceDetails}>
+                          {device.time !== "Invalid Date" && (
+                            <Text style={[styles.deviceName, currentStyles.text]}>
+                              {device.time}
+                            </Text>
+                          )}
+                          <Text style={[styles.deviceDetailText, currentStyles.text]}>
+                            Tiêu thụ: {device.usage}
+                          </Text>
+                          <Text style={[styles.deviceDetailText, currentStyles.text]}>
+                            Nhiệt độ: {device.temperature}
+                          </Text>
+                          <Text style={[styles.deviceDetailText, currentStyles.text]}>
+                            Độ ẩm: {device.humidity}
+                          </Text>
+                          <Text style={[styles.deviceDetailText, currentStyles.text]}>
+                            Dòng điện: {device.current}
+                          </Text>
+                          <Text style={[styles.deviceDetailText, currentStyles.text]}>
+                            Điện áp: {device.voltage_light}
+                          </Text>
+                        </View>
+                      </View>
+                    ))}
                 </View>
               )}
             </View>
@@ -317,7 +267,6 @@ export default function ReportScreen({ navigation, route }: any) {
         )}
       </ScrollView>
 
-      {/* Pop-up cho lời khuyên */}
       <Modal
         transparent={true}
         visible={!!selectedAdvice}
@@ -426,7 +375,7 @@ const styles = StyleSheet.create({
   },
   reportList: {
     flex: 1,
-    marginBottom: 0,
+    marginBottom: 120,
   },
   reportItem: {
     padding: 10,
@@ -469,16 +418,21 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   deviceItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingVertical: 5,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E0E0E0",
   },
   deviceName: {
-    fontSize: 13,
-    fontWeight: "500",
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 5,
   },
-  deviceUsage: {
+  deviceDetails: {
+    marginLeft: 10,
+  },
+  deviceDetailText: {
     fontSize: 13,
+    marginBottom: 3,
   },
   modalOverlay: {
     flex: 1,
