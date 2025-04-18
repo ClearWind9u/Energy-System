@@ -40,3 +40,22 @@ exports.addNotification = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
+
+
+exports.getAllNotificationById = async (req, res) => {
+    try {
+        const { id_group } = req.query;
+
+        if (!id_group) {
+            return res.status(400).json({ message: "Thiếu id_group" });
+        }
+
+        const sql = "SELECT * FROM notification WHERE id_group = ? ORDER BY time DESC";
+        const [rows] = await db.promise().query(sql, [id_group]);
+
+        return res.status(200).json({ notifications: rows });
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách thông báo:", error);
+        return res.status(500).json({ message: "Internal server error", error: error.message });
+    }
+};
