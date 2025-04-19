@@ -1,4 +1,5 @@
 const db = require('../database/db');
+const { connect } = require('../routes/userRoutes');
 exports.addNotification = async (req, res) => {
     const listDevice = new Map([
         ["switchState[0]", "relay"],
@@ -59,3 +60,25 @@ exports.getAllNotificationById = async (req, res) => {
         return res.status(500).json({ message: "Internal server error", error: error.message });
     }
 };
+
+exports.deleteNotificationById = async (req, res)  => {
+    try {
+        const {id_message } = req.query;
+        if( !id_message) {
+            return res.status(400),json({message: "Thiếu id_message"});
+        }
+
+        const sql = " DELETE from notification where id = ? ";
+
+       const [result] =  await db.promise().query(sql,[id_message]);
+       if (result.affectedRows === 0){
+        return res.status(404).json({message:"Không tìm thấy Id đã cho"})
+       } 
+
+       return res.status(200).json({message:" Xóa thông báo thành công"})
+
+    } catch(error) {
+        console.log("Lỗi hệ thống:", error.message); // in lỗi ra rõ ràng
+        return res.status(500).json({ message: "Lỗi hệ thống", error: error.message });
+    }
+}

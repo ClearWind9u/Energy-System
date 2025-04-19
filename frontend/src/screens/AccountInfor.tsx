@@ -307,8 +307,10 @@ const nightModeStyles = StyleSheet.create({
   form: {
 
     backgroundColor: "#1e1e1e",
+    // backgroundColor: "red",
     padding: 15,
     borderRadius: 0,
+
   },
   input: {
     padding: 12,
