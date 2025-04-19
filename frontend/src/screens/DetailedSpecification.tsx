@@ -12,10 +12,20 @@ import {
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+function getTodayDate() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0"); // tháng bắt đầu từ 0
+  const day = String(today.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
 export default function DetailedSpecification({ navigation }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
   const [telemetry, setTelemetry] = useState({});
+  const [maxHumidity, setMaxHumidity] = useState(0);
+  const [maxTemperature, setMaxTemperature] = useState(0);
   const [connected, setConnected] = useState(false);
   const [token, setToken] = useState("");
   const socketRef = useRef(null);
@@ -31,6 +41,17 @@ export default function DetailedSpecification({ navigation }) {
     getTokenAndConnect();
   }, []);
   useEffect(() => {
+    const updateRecord = async (data) => {
+      const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/addRecord`;
+      try {
+        const response = await axios.post(apiURL, data);
+        if (response.data) {
+          console.log(response.data.message);
+        }
+      } catch (error) {
+        console.log("Lỗi khi cập nhật bản ghi ", error);
+      }
+    };
     if (token) {
       const socket = new WebSocket(
         `wss://app.coreiot.io/api/ws/plugins/telemetry?token=${token}`
@@ -58,16 +79,30 @@ export default function DetailedSpecification({ navigation }) {
 
       socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        console.log("Dữ liệu nhận được: ", data.data);
+
         if (data.data) {
           const newTelemetry = { ...telemetry };
+          let check = false;
           Object.entries(data.data).forEach(([key, value]) => {
             if (
               Array.isArray(value) &&
               value.length > 0 &&
               value[0].length === 2
             ) {
-              newTelemetry[key] = parseFloat(value[0][1]).toFixed(0);
+              const numericValue = parseFloat(value[0][1]);
+              newTelemetry[key] = numericValue.toFixed(0);
+              if (key === "humidity") {
+                check = maxHumidity < numericValue;
+                setMaxHumidity((prev) =>
+                  prev === 0 ? numericValue : Math.max(prev, numericValue)
+                );
+              }
+              if (key === "temperature") {
+                check = check || maxTemperature < numericValue;
+                setMaxTemperature((prev) =>
+                  prev === 0 ? numericValue : Math.max(prev, numericValue)
+                );
+              }
             }
           });
           //console.log("New Telemetry ", newTelemetry);
@@ -75,6 +110,15 @@ export default function DetailedSpecification({ navigation }) {
             ...prev,
             ...newTelemetry,
           }));
+          if (check) {
+            const data = {
+              ...telemetry,
+              ...newTelemetry,
+              id_device: process.env.DEVICE_ID,
+              time: getTodayDate(),
+            };
+            updateRecord(data);
+          }
         }
       };
 
@@ -150,13 +194,13 @@ export default function DetailedSpecification({ navigation }) {
             color={currentStyles.text.color}
           />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>Thông số chi tiết</Text>
-        <TouchableOpacity onPress={() => navigation.navigate("Notification")}  >
+        <Text style={[styles.title, currentStyles.text]}>
+          Thông số chi tiết
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate("Notification")}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
       </View>
-
-
 
       {/* Detail Section */}
       {/* <Text style={[styles.sectionTitle, currentStyles.text]}>
@@ -196,28 +240,36 @@ export default function DetailedSpecification({ navigation }) {
         ))}
       </ScrollView> */}
 
-        <ScrollView contentContainerStyle={styles.cardContainer}>
-          {cards.map((card, index) => (
-            <ImageBackground
-              key={index}
-              source={card.backgroundImage}
-              imageStyle={{ borderRadius: 15 }}
-              style={[styles.card, currentStyles.card]}
-            >
-              <View style={styles.overlay}>
-                <FontAwesome name={card.icon} size={40} color="#fff" style={styles.cardIcon} />
-                <Text style={styles.cardTitle}>{card.title}</Text>
-                <Text style={styles.cardValue}>{card.value}</Text>
-              </View>
-            </ImageBackground>
-          ))}
-        </ScrollView>
-
+      <ScrollView contentContainerStyle={styles.cardContainer}>
+        {cards.map((card, index) => (
+          <ImageBackground
+            key={index}
+            source={card.backgroundImage}
+            imageStyle={{ borderRadius: 15 }}
+            style={[styles.card, currentStyles.card]}
+          >
+            <View style={styles.overlay}>
+              <FontAwesome
+                name={card.icon}
+                size={40}
+                color="#fff"
+                style={styles.cardIcon}
+              />
+              <Text style={styles.cardTitle}>{card.title}</Text>
+              <Text style={styles.cardValue}>{card.value}</Text>
+            </View>
+          </ImageBackground>
+        ))}
+      </ScrollView>
 
       {/* Bottom Navigation */}
       <View style={[styles.bottomNav, currentStyles.bottomNav]}>
         <TouchableOpacity style={styles.navButton}>
-          <MaterialCommunityIcons name="view-dashboard" size={24} color="white" />
+          <MaterialCommunityIcons
+            name="view-dashboard"
+            size={24}
+            color="white"
+          />
           <Text style={styles.navText}>Bảng điều khiển</Text>
         </TouchableOpacity>
 
@@ -230,7 +282,7 @@ export default function DetailedSpecification({ navigation }) {
           <MaterialCommunityIcons name="account" size={24} color="white" />
           <Text style={styles.navText}>Tài khoản</Text>
         </TouchableOpacity>
-      </View> 
+      </View>
     </View>
   );
 }
