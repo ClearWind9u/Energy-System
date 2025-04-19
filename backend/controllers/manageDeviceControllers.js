@@ -130,7 +130,10 @@ exports.getMaxValue = async (req, res) => {
       [year]
     );
     console.log("Giá trị lớn nhất trong năm: ", result[0]);
-    return res.status(200).json({ message: "Lấy giá trị thành công" });
+    return res.status(200).json({
+      message: "Lấy giá trị thành công",
+      data: result[0]
+    });
   } catch (error) {
     console.error("Lỗi khi lấy giá trị lớn nhất:", error.message);
     return res

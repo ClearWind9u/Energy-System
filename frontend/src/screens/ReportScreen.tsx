@@ -50,27 +50,64 @@ export default function ReportScreen({ navigation, route }: any) {
           date: selectedDate,
         },
       });
-      const transformedData = response.data.map((item) => ({
-        date: item.date,
-        displayDate: item.displayDate,
-        usage: item.devices
+      const transformedData = response.data.map((item) => {
+        const usage = item.devices
           .reduce(
-            (sum, device) => sum + (device.current * device.voltage_light) / 1000,
+            (sum, device) => sum + (device.current * device.voltage_light * 24) / 1000,
             0
           )
-          .toFixed(2),
-        recommendation: "Khuyến nghị tiết kiệm điện",
-        status: "Khuyến nghị",
-        devices: item.devices.map((device) => ({
-          name: deviceNameMap[device.name] || device.name,
-          usage: ((device.current * device.voltage_light) / 1000).toFixed(2) + " kWh",
-          temperature: device.temperature.toFixed(1) + " °C",
-          humidity: device.humidity.toFixed(1) + " %",
-          current: device.current.toFixed(1) + " A",
-          voltage_light: device.voltage_light.toFixed(0) + " V",
-          time: new Date(device.time).toLocaleDateString("vi-VN"),
-        })),
-      }));
+          .toFixed(2);
+        let recommendation = "";
+        const usageFloat = parseFloat(usage);
+        if (activeFilter === "Ngày") {
+          if (usageFloat <= 1) {
+            recommendation = "Mức tiêu thụ điện thấp, hợp lý cho một ngày. Tiếp tục duy trì.";
+          } else if (usageFloat <= 3) {
+            recommendation =
+              "Mức tiêu thụ điện trung bình. Xem xét giảm sử dụng các thiết bị không cần thiết.";
+          } else {
+            recommendation =
+              "Mức tiêu thụ điện cao. Kiểm tra và tắt các thiết bị tiêu thụ lớn.";
+          }
+        } else if (activeFilter === "Tháng") {
+          if (usageFloat <= 20) {
+            recommendation = "Mức tiêu thụ điện thấp, phù hợp cho một tháng. Tiếp tục duy trì.";
+          } else if (usageFloat <= 60) {
+            recommendation =
+              "Mức tiêu thụ điện trung bình. Cân nhắc tối ưu hóa sử dụng điện.";
+          } else {
+            recommendation =
+              "Mức tiêu thụ điện cao. Kiểm tra thiết bị và điều chỉnh thói quen sử dụng.";
+          }
+        } else {
+          // Năm
+          if (usageFloat <= 200) {
+            recommendation = "Mức tiêu thụ điện thấp, tiết kiệm trong năm. Tiếp tục duy trì.";
+          } else if (usageFloat <= 600) {
+            recommendation =
+              "Mức tiêu thụ điện trung bình. Xem xét các giải pháp tiết kiệm điện.";
+          } else {
+            recommendation =
+              "Mức tiêu thụ điện cao. Cần kiểm tra kỹ các thiết bị và giảm tiêu thụ.";
+          }
+        }
+        return {
+          date: item.date,
+          displayDate: item.displayDate,
+          usage,
+          recommendation,
+          status: "Khuyến nghị",
+          devices: item.devices.map((device) => ({
+            name: device.name,
+            usage: ((device.current * device.voltage_light * 24) / 1000).toFixed(2) + " kWh",
+            temperature: device.temperature.toFixed(1) + " °C",
+            humidity: device.humidity.toFixed(1) + " %",
+            current: device.current.toFixed(1) + " A",
+            voltage_light: device.voltage_light.toFixed(0) + " V",
+            time: new Date(device.time).toLocaleDateString("vi-VN"),
+          })),
+        };
+      });
       setReportData(transformedData);
     } catch (err) {
       console.error("Error fetching records:", err.message);
@@ -286,7 +323,7 @@ export default function ReportScreen({ navigation, route }: any) {
             <TouchableWithoutFeedback>
               <View style={[styles.modalContent, currentStyles.modalContent]}>
                 <Text style={[styles.modalTitle, currentStyles.text]}>
-                  Lời khuyên từ AI
+                  Lời khuyên
                 </Text>
                 <Text style={[styles.modalText, currentStyles.text]}>
                   {selectedAdvice || "Hiện tại không có lời khuyên cụ thể."}
