@@ -122,16 +122,7 @@ project-root/
 
 ## 📞 Liên hệ
 Nếu gặp vấn đề hoặc cần hỗ trợ, vui lòng liên hệ:
-- **Email**: [your-email@example.com]
-- **GitHub Issues**: [Tạo issue trên repository](#)
-
-## 🌟 Đóng góp
-Chúng tôi hoan nghênh mọi đóng góp! Để đóng góp:
-1. Fork repository.
-2. Tạo branch mới: `git checkout -b feature/your-feature`.
-3. Commit thay đổi: `git commit -m "Add your feature"`.
-4. Push lên branch: `git push origin feature/your-feature`.
-5. Tạo Pull Request trên GitHub.
+- **Email**: [phamthanhphong9u@gmail.com]
 
 ---
 
