@@ -1,5 +1,5 @@
 const db = require('../database/db')
-const axios = require("axios");
+//const axios = require("axios");
 
 //lay danh sach thiet bi
 exports.getAllDevices = async (req,res) => {
@@ -85,7 +85,7 @@ exports.setPower = async (req, res) => {
 
 exports.addRecord = async (req, res) => {
   try {
-    const { id_device, current, humidity, temperature, voltage_light, time } =
+    let { id_device, current, humidity, temperature, voltage_light, time } =
       req.body;
     const [existing] = await db
       .promise()
@@ -94,9 +94,16 @@ exports.addRecord = async (req, res) => {
         time,
       ]);
     if (existing.length > 0) {
-      return res
-        .status(200)
-        .json({ message: "Bản ghi đã tồn tại. Không thêm mới." });
+      humidity = Math.max(existing[0].humidity, humidity);
+      temperature = Math.max(existing[0].temperature, temperature);
+      await db
+        .promise()
+        .query(`UPDATE record SET humidity = ?, temperature = ? WHERE id = ?`, [
+          humidity,
+          temperature,
+          existing[0].id,
+        ]);
+      return res.status(200).json({ message: "Cập nhật bản ghi thành công" });
     }
     await db.promise().query(
       `INSERT INTO record (id_device, time, current, humidity, temperature, voltage_light)
@@ -106,6 +113,29 @@ exports.addRecord = async (req, res) => {
     return res.status(201).json({ message: "Thêm bản ghi thành công" });
   } catch (error) {
     console.error("Lỗi khi thêm bản ghi:", error.message);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+
+exports.getMaxValue = async (req, res) => {
+  try {
+    const year = req.query.year;
+    console.log("Year ", year);
+    const [result] = await db.promise().query(
+      `SELECT MAX(temperature) as max_temperature, MAX(humidity) as max_humidity
+       FROM record WHERE year(time) = ?
+      `,
+      [year]
+    );
+    console.log("Giá trị lớn nhất trong năm: ", result[0]);
+    return res.status(200).json({
+      message: "Lấy giá trị thành công",
+      data: result[0]
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy giá trị lớn nhất:", error.message);
     return res
       .status(500)
       .json({ message: "Internal server error", error: error.message });

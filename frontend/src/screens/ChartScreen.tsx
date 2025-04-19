@@ -31,6 +31,13 @@ interface ChartData {
   voltage_light: ChartDataPoint[];
 }
 
+interface MaxValues {
+  max_temperature: number | null;
+  max_humidity: number | null;
+  avg_temperature: number | null;
+  avg_humidity: number | null;
+}
+
 export default function ChartScreen({ navigation, route }: any) {
   const { isDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
@@ -43,6 +50,12 @@ export default function ChartScreen({ navigation, route }: any) {
     current: [],
     voltage_light: [],
   });
+  const [maxValues, setMaxValues] = useState<MaxValues>({
+    max_temperature: null,
+    max_humidity: null,
+    avg_temperature: null,
+    avg_humidity: null,
+  });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,7 +63,7 @@ export default function ChartScreen({ navigation, route }: any) {
     "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
     "#FF9F40", "#FFCD56", "#C9CB3F", "#FF5733", "#C678DD",
     "#36A2EB", "#FF6384"
-  ]; // 12 màu riêng biệt
+  ];
 
   const monthNames = [
     "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
@@ -69,7 +82,6 @@ export default function ChartScreen({ navigation, route }: any) {
         },
       });
 
-      console.log("API Response:", JSON.stringify(response.data, null, 2));
       const monthSummary: {
         [key: number]: {
           usage: number;
@@ -91,6 +103,10 @@ export default function ChartScreen({ navigation, route }: any) {
         };
       }
 
+      let totalTemperature = 0;
+      let totalHumidity = 0;
+      let totalCount = 0;
+
       response.data.forEach((item: any) => {
         item.devices.forEach((device: any) => {
           const date = new Date(device.time);
@@ -99,16 +115,22 @@ export default function ChartScreen({ navigation, route }: any) {
             return;
           }
           const month = date.getMonth() + 1;
-          monthSummary[month].usage += (device.current * device.voltage_light) / 1000;
+          const kWhPerDay = (device.current * device.voltage_light * 24) / 1000;
+          monthSummary[month].usage += kWhPerDay;
           monthSummary[month].temperature += device.temperature;
           monthSummary[month].humidity += device.humidity;
           monthSummary[month].current += device.current;
           monthSummary[month].voltage_light += device.voltage_light;
           monthSummary[month].count += 1;
+
+          totalTemperature += device.temperature;
+          totalHumidity += device.humidity;
+          totalCount += 1;
         });
       });
-
-      console.log("Month Summary:", monthSummary);
+      // Tính nhiệt độ và độ ẩm trung bình của năm
+      const avgTemperature = totalCount > 0 ? Number((totalTemperature / totalCount).toFixed(1)) : null;
+      const avgHumidity = totalCount > 0 ? Number((totalHumidity / totalCount).toFixed(1)) : null;
 
       const chartDataFormatted: ChartData = {
         usage: [],
@@ -123,8 +145,8 @@ export default function ChartScreen({ navigation, route }: any) {
         const summary = monthSummary[month];
         const count = summary.count || 1;
 
-        // Tính giá trị trung bình
-        const usageValue = summary.count ? Number((summary.usage / count).toFixed(2)) : 0;
+        // Tính giá trị cho biểu đồ
+        const usageValue = summary.count ? Number(summary.usage.toFixed(2)) : 0;
         const tempValue = summary.count ? Number((summary.temperature / count).toFixed(1)) : 0;
         const humidityValue = summary.count ? Number((summary.humidity / count).toFixed(1)) : 0;
         const currentValue = summary.count ? Number((summary.current / count).toFixed(1)) : 0;
@@ -167,8 +189,12 @@ export default function ChartScreen({ navigation, route }: any) {
         });
       });
 
-      console.log("Chart Data:", JSON.stringify(chartDataFormatted, null, 2));
       setChartData(chartDataFormatted);
+      setMaxValues((prev) => ({
+        ...prev,
+        avg_temperature: avgTemperature,
+        avg_humidity: avgHumidity,
+      }));
     } catch (err: any) {
       console.error("Error fetching chart data:", err.message);
       setError("Không thể tải dữ liệu biểu đồ. Vui lòng thử lại.");
@@ -177,8 +203,27 @@ export default function ChartScreen({ navigation, route }: any) {
     }
   };
 
+  const fetchMaxValues = async () => {
+    try {
+      const year = new Date(selectedDate).getFullYear();
+      const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/getMaxValue`;
+      const response = await axios.get(apiURL, {
+        params: { year },
+      });
+      setMaxValues((prev) => ({
+        ...prev,
+        max_temperature: response.data.data.max_temperature || null,
+        max_humidity: response.data.data.max_humidity || null,
+      }));
+    } catch (err: any) {
+      console.error("Error fetching max values:", err.message);
+      setError("Không thể tải giá trị lớn nhất. Vui lòng thử lại.");
+    }
+  };
+
   useEffect(() => {
     fetchChartData();
+    fetchMaxValues();
   }, [selectedDate]);
 
   const renderLegend = (data: ChartDataPoint[]) => {
@@ -198,7 +243,6 @@ export default function ChartScreen({ navigation, route }: any) {
   };
 
   const renderPieChart = (data: ChartDataPoint[], title: string, unit: string) => {
-    console.log(`${title} Data:`, data);
     const filteredData = data.filter((d) => d.value > 0);
     return (
       <View style={styles.chartContainer}>
@@ -213,14 +257,14 @@ export default function ChartScreen({ navigation, route }: any) {
               chartConfig={{
                 color: (opacity = 1) => isDayMode ? `rgba(100, 100, 100, ${opacity})` : `rgba(200, 200, 200, ${opacity})`,
                 labelColor: () => currentStyles.text.color,
-                decimalPlaces: 0, 
+                decimalPlaces: 0,
               }}
               accessor="value"
               backgroundColor="transparent"
               paddingLeft="90"
-              absolute={false} 
-              hasLegend={false} 
-              style={styles.pieChart} 
+              absolute={false}
+              hasLegend={false}
+              style={styles.pieChart}
             />
           </View>
         ) : (
@@ -233,7 +277,6 @@ export default function ChartScreen({ navigation, route }: any) {
   };
 
   const renderBarChart = (data: ChartDataPoint[], title: string, unit: string) => {
-    console.log(`${title} Data:`, data);
     const filteredData = data.filter((d) => d.value > 0);
     const barData = {
       labels: filteredData.map((d) => monthNames[parseInt(d.name.split(" ")[1]) - 1]),
@@ -253,7 +296,7 @@ export default function ChartScreen({ navigation, route }: any) {
               data={barData}
               width={screenWidth - 40}
               height={220}
-              fromZero={true} 
+              fromZero={true}
               chartConfig={{
                 backgroundColor: isDayMode ? "#E6F0FA" : "#2A2A2A",
                 backgroundGradientFrom: isDayMode ? "#E6F0FA" : "#2A2A2A",
@@ -261,21 +304,19 @@ export default function ChartScreen({ navigation, route }: any) {
                 decimalPlaces: 0,
                 color: (opacity = 1) => isDayMode ? `rgba(100, 100, 100, ${opacity})` : `rgba(200, 200, 200, ${opacity})`,
                 labelColor: () => currentStyles.text.color,
-                barPercentage: 0.6, 
-                barRadius: 4, 
+                barPercentage: 0.6,
+                barRadius: 4,
                 fillShadowGradient: isDayMode ? "#4A90E2" : "#6B9BF2",
                 fillShadowGradientOpacity: 1,
                 propsForLabels: {
                   fontSize: 12,
                   fontWeight: "500",
                 },
-                formatYLabel: (value: string) => `${parseFloat(value).toFixed(0)}${unit}`,
               }}
               style={styles.barChart}
-              showValuesOnTopOfBars={true} 
-              withCustomBarColorFromData={true} 
-              flatColor={true} 
-              withHorizontalLines={true}
+              showValuesOnTopOfBars={true}
+              withCustomBarColorFromData={true}
+              flatColor={true}
             />
           </View>
         ) : (
@@ -299,15 +340,62 @@ export default function ChartScreen({ navigation, route }: any) {
         <View style={{ width: 24 }} />
       </View>
 
+      <View style={[styles.maxValuesContainer, currentStyles.maxValuesContainer]}>
+        <View style={styles.maxValueItem}>
+          <FontAwesome
+            name="thermometer"
+            size={16}
+            color={isDayMode ? "#4A90E2" : "#6B9BF2"}
+            style={styles.maxValueIcon}
+          />
+          <Text style={[styles.maxValuesText, currentStyles.maxValuesText]}>
+            Nhiệt độ lớn nhất: {maxValues.max_temperature !== null ? `${maxValues.max_temperature} °C` : "Không có dữ liệu"}
+          </Text>
+        </View>
+        <View style={styles.maxValueItem}>
+          <FontAwesome
+            name="thermometer-half"
+            size={16}
+            color={isDayMode ? "#4A90E2" : "#6B9BF2"}
+            style={styles.maxValueIcon}
+          />
+          <Text style={[styles.maxValuesText, currentStyles.maxValuesText]}>
+            Nhiệt độ trung bình: {maxValues.avg_temperature !== null ? `${maxValues.avg_temperature} °C` : "Không có dữ liệu"}
+          </Text>
+        </View>
+        <View style={styles.maxValueItem}>
+          <FontAwesome
+            name="tint"
+            size={16}
+            color={isDayMode ? "#4A90E2" : "#6B9BF2"}
+            style={styles.maxValueIcon}
+          />
+          <Text style={[styles.maxValuesText, currentStyles.maxValuesText]}>
+            Độ ẩm lớn nhất: {maxValues.max_humidity !== null ? `${maxValues.max_humidity} %` : "Không có dữ liệu"}
+          </Text>
+        </View>
+        <View style={styles.maxValueItem}>
+          <FontAwesome
+            name="tint"
+            size={16}
+            color={isDayMode ? "#4A90E2" : "#6B9BF2"}
+            style={styles.maxValueIcon}
+          />
+          <Text style={[styles.maxValuesText, currentStyles.maxValuesText]}>
+            Độ ẩm trung bình: {maxValues.avg_humidity !== null ? `${maxValues.avg_humidity} %` : "Không có dữ liệu"}
+          </Text>
+        </View>
+      </View>
+
       {loading ? (
         <ActivityIndicator size="large" color={isDayMode ? "#4A90E2" : "#6B9BF2"} />
       ) : error ? (
         <Text style={[styles.noDataText, currentStyles.text]}>{error}</Text>
       ) : (
         <ScrollView style={styles.chartList}>
-          {renderPieChart(chartData.usage, "Tiêu thụ điện", "kWh")}
-          {renderBarChart(chartData.temperature, "Nhiệt độ", "°C")}
-          {renderBarChart(chartData.humidity, "Độ ẩm", "%")}
+          {renderPieChart(chartData.usage, "Tổng tiêu thụ điện", "kWh")}
+          {renderBarChart(chartData.temperature, "Nhiệt độ trung bình", "°C")}
+          {renderBarChart(chartData.humidity, "Độ ẩm trung bình", "%")}
         </ScrollView>
       )}
     </View>
@@ -362,11 +450,13 @@ const styles = StyleSheet.create({
   barChartContainer: {
     alignItems: "center",
     justifyContent: "center",
-    alignSelf: "center", 
+    alignSelf: "center",
     width: screenWidth - 40,
   },
   barChart: {
     alignSelf: "center",
+    marginHorizontal: 0,
+    paddingHorizontal: 0,
   },
   legendContainer: {
     flexDirection: "row",
@@ -389,14 +479,56 @@ const styles = StyleSheet.create({
   legendText: {
     fontSize: 12,
   },
+  maxValuesContainer: {
+    alignItems: "center",
+    marginBottom: 20,
+    padding: 15,
+    borderRadius: 10,
+    width: "100%",
+  },
+  maxValueItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 5,
+  },
+  maxValueIcon: {
+    marginRight: 8,
+  },
+  maxValuesText: {
+    fontSize: 16,
+    fontWeight: "600",
+    letterSpacing: 0.5,
+  },
 });
 
 const dayModeStyles = StyleSheet.create({
   container: { backgroundColor: "#fff" },
   text: { color: "black" },
+  maxValuesContainer: {
+    backgroundColor: "#F0F8FF",
+    borderWidth: 1,
+    borderColor: "#D3E3FD",
+  },
+  maxValuesText: {
+    color: "#4A90E2",
+    textShadowColor: "rgba(0, 0, 0, 0.1)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
 });
 
 const nightModeStyles = StyleSheet.create({
   container: { backgroundColor: "#1E1E1E" },
   text: { color: "white" },
+  maxValuesContainer: {
+    backgroundColor: "#2A2A2A",
+    borderWidth: 1,
+    borderColor: "#3A3A3A",
+  },
+  maxValuesText: {
+    color: "#6B9BF2",
+    textShadowColor: "rgba(0, 0, 0, 0.3)",
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
+  },
 });
