@@ -14,6 +14,13 @@ export default function AdjustComsumption({ navigation, route }) {
   const [isOnAutomatic, setIsOnAutomatic] = useState(false); // switchState[4]: false = auto, true = manual
   const [areAllDevicesOn, setAreAllDevicesOn] = useState(false); // switchState[3]
   const userID = route.params?.userID || null;
+  const [user, setUser] = useState({
+      name: "",
+      id: "",
+      account: "",
+      id_group: "",
+    });
+
 // api getAllDeviceState
   const apiURL = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D";
 
@@ -50,6 +57,27 @@ export default function AdjustComsumption({ navigation, route }) {
     }
     return { icon: "cog", iconFamily: "MaterialCommunityIcons" };
   };
+
+  const fetchUserData = async () => {
+    if (!route.params?.userID) return;
+    try {
+      const response = await fetch(
+        `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${route.params.userID}`
+      );
+      const data = await response.json();
+      if (data.errCode === 0) {
+        setUser(data.user);
+      } else {
+        setError("Không tìm thấy người dùng");
+      }
+
+    } catch (error) {
+      setError("Lỗi khi tải dữ liệu");
+    }
+    setLoading(false);
+  };
+
+
 
   const fetchDevices = async () => {
     try {
@@ -147,6 +175,29 @@ export default function AdjustComsumption({ navigation, route }) {
               },
             }
           );
+// gửi thông báo khi chuyển chế độ thủ công/ tự động
+
+// let userNameLocal = await AsyncStorage.getItem("userName");
+console.log("username local auto", user.name);
+fetchUserData();
+
+          const payloadAddNoti = {
+            id: 1,
+            device: "switchState[4]",
+            state: newValue,
+            // username : userNameLocal
+            username : user.name
+          }
+
+          const addNewNotification = await axios.post(
+            `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/notification`,
+            payloadAddNoti,
+            {
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
 
 
 
@@ -193,11 +244,19 @@ export default function AdjustComsumption({ navigation, route }) {
               },
             }
           );
+// gửi thông báo khi chuyển chế độ bật tắt tất cả các thiệt bị
+// console.log("userId at Ajusttt", route.params.userID);
+        // let userNameLocal = await AsyncStorage.getItem("userName")  ;
+        console.log("username local fulltoping", user.name);
+        fetchUserData();
+
 
           const payloadAddNoti = {
             id: 1,
             device: "switchState[3]",
-            state: newValue
+            state: newValue,
+            // username : userNameLocal
+            username : user.name
           }
 
           const addNewNotification = await axios.post(

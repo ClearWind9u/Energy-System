@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     padding: 15,
     borderRadius: 10,
-    backgroundColor: "#f4f4f4",
+    backgroundColor: "#E5E5E5",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -234,7 +234,7 @@ const dayModeStyles = StyleSheet.create({
   container: { backgroundColor: "#ffffff" },
   header: { backgroundColor: "white" },
   text: { color: "#000" },
-  notificationContainer: { backgroundColor: "#f4f4f4" },
+  notificationContainer: {   backgroundColor: "#F5F9FF"},
 });
 
 const nightModeStyles = StyleSheet.create({

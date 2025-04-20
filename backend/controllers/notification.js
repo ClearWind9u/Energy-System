@@ -10,9 +10,9 @@ exports.addNotification = async (req, res) => {
     ]);
 
     try {
-        const { id, device, state } = req.body;
+        const { id, device, state, username } = req.body;
 
-        const statusText = state ? "Đã bật " : "Đã tắt ";
+        const statusText = state ? "đã bật " : "đã tắt ";
 
         const date = new Date();
 
@@ -28,7 +28,7 @@ exports.addNotification = async (req, res) => {
             ('0' + utc7.getSeconds()).slice(-2);
 
         const deviceName = listDevice.get(device) || "thiết bị không xác định";
-        const notificationText = `${statusText}${deviceName} vào ${formatted}`;
+        const notificationText = `${username} ${statusText}${deviceName}`;
 
         const insertSql = "INSERT INTO notification (id, id_group, content, time) VALUES (null, ?, ?, ?)";
         const idGroup = parseInt(id); // assuming `id` is the group ID

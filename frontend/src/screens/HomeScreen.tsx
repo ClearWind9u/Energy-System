@@ -126,8 +126,13 @@ export default function HomeScreen({ navigation, route }) {
                 // borderColor: feature.borderColor,
               },
             ]}
-            onPress={() => navigation.navigate(feature.navigateTo)}
+            // navigation.navigate("Home", {
+            //   userID: userID,
+            // });
+            onPress={() => navigation.navigate(feature.navigateTo, {userID: userID})  }
             activeOpacity={0.8}
+            // route={{ params: { userID } }}
+            
           >
             {/* <Text style={styles.cardText}>{feature.name}</Text>
             <FontAwesome name={feature.icon} size={40} color="#fff" style={styles.cardIcon} /> */}
@@ -215,7 +220,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0, 0, 0, 0.5)", // 0.4 là độ mờ, chỉnh tùy ý
+    backgroundColor: "rgba(0, 0, 0, 0.2)", // 0.4 là độ mờ, chỉnh tùy ý
     borderRadius: 15,
     zIndex: 0,
   },

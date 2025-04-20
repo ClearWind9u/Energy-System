@@ -31,7 +31,9 @@ export default function LoginScreen({ navigation }) {
         alert(
           response.data.errMessage + " with ID user: " + response.data.idUser
         );
+        // save userID
         await AsyncStorage.setItem("userID", response.data.idUser.toString());
+
         const userID = await AsyncStorage.getItem("userID");
         console.log("at login form",userID); // Kết quả: "12345"
         navigation.navigate("Home", {

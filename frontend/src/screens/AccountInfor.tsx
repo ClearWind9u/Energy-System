@@ -33,6 +33,7 @@ export default function AccountInfor({ navigation, route }) {
     try {
       // Xóa token khỏi AsyncStorage (hoặc SecureStore nếu dùng)
       await AsyncStorage.removeItem("userID");
+      await AsyncStorage.removeItem("userName");
       // Điều hướng về màn hình đăng nhập
       navigation.replace("Login");
     } catch (error) {
@@ -46,9 +47,14 @@ export default function AccountInfor({ navigation, route }) {
       const response = await fetch(
         `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/api/get-user/${route.params.userID}`
       );
+
+      console.log("userId at AccountInfor", route.params.userID);
       const data = await response.json();
       if (data.errCode === 0) {
         setUser(data.user);
+        await AsyncStorage.setItem("userName", user.name.toString());
+        const userNameLocal = await AsyncStorage.getItem("userName");
+        console.log("username local", userNameLocal);
       } else {
         setError("Không tìm thấy người dùng");
       }
@@ -83,8 +89,6 @@ export default function AccountInfor({ navigation, route }) {
         });
         
     };
-
-
 
 
   return (

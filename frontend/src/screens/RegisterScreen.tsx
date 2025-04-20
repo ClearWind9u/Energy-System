@@ -41,6 +41,7 @@ export default function RegisterScreen({ navigation }) {
       console.log(error);
     }
   };
+  
   return (
     <View style={styles.container}>
       {/* Nút quay lại */}
