@@ -2,28 +2,38 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
-  Switch,
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Image,
-  ImageBackground
 } from "react-native";
 import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTheme } from "../navigation/ThemeContext";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
+
 function getTodayDate() {
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // tháng bắt đầu từ 0
+  const month = String(today.getMonth() + 1).padStart(2, "0");
   const day = String(today.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
 export default function DetailedSpecification({ navigation }) {
   const { isDayMode, setIsDayMode } = useTheme();
   const currentStyles = isDayMode ? dayModeStyles : nightModeStyles;
-  const [telemetry, setTelemetry] = useState({});
+  const [telemetry, setTelemetry] = useState({
+    temperature: null,
+    humidity: null,
+    voltage_light: null,
+    current: null,
+  });
+  const [telemetryHistory, setTelemetryHistory] = useState({
+    temperature: [],
+    humidity: [],
+    voltage_light: [],
+    current: [],
+  });
   const [maxHumidity, setMaxHumidity] = useState(0);
   const [maxTemperature, setMaxTemperature] = useState(0);
   const [connected, setConnected] = useState(false);
@@ -31,6 +41,7 @@ export default function DetailedSpecification({ navigation }) {
   const socketRef = useRef(null);
   const deviceId = "8fb0b170-00ce-11f0-a887-6d1a184f2bb5";
   const keys = "current,humidity,temperature,voltage_light";
+
   useEffect(() => {
     const getTokenAndConnect = async () => {
       const savedToken = await AsyncStorage.getItem("userToken");
@@ -40,6 +51,7 @@ export default function DetailedSpecification({ navigation }) {
     };
     getTokenAndConnect();
   }, []);
+
   useEffect(() => {
     const updateRecord = async (data) => {
       const apiURL = `http://${process.env.EXPO_PUBLIC_LOCALHOST}:3000/device/addRecord`;
@@ -82,7 +94,9 @@ export default function DetailedSpecification({ navigation }) {
 
         if (data.data) {
           const newTelemetry = { ...telemetry };
+          const newHistory = { ...telemetryHistory };
           let check = false;
+
           Object.entries(data.data).forEach(([key, value]) => {
             if (
               Array.isArray(value) &&
@@ -91,6 +105,10 @@ export default function DetailedSpecification({ navigation }) {
             ) {
               const numericValue = parseFloat(value[0][1]);
               newTelemetry[key] = numericValue.toFixed(0);
+
+              // Cập nhật lịch sử (giữ tối đa 10 điểm dữ liệu)
+              newHistory[key] = [...(newHistory[key] || []), numericValue].slice(-10);
+
               if (key === "humidity") {
                 check = maxHumidity < numericValue;
                 setMaxHumidity((prev) =>
@@ -105,11 +123,10 @@ export default function DetailedSpecification({ navigation }) {
               }
             }
           });
-          //console.log("New Telemetry ", newTelemetry);
-          setTelemetry((prev) => ({
-            ...prev,
-            ...newTelemetry,
-          }));
+
+          setTelemetry(newTelemetry);
+          setTelemetryHistory(newHistory);
+
           if (check) {
             const data = {
               ...telemetry,
@@ -136,6 +153,7 @@ export default function DetailedSpecification({ navigation }) {
       };
     }
   }, [token]);
+
   if (!token) {
     return (
       <View style={[styles.container, currentStyles.container]}>
@@ -144,42 +162,50 @@ export default function DetailedSpecification({ navigation }) {
     );
   }
 
-  // // Logic điều kiện cho LED matrix, quạt, và relay
-  // const isLedMatrixOn = deviceData.voltage_light <= 0.2;
-  // const isFanOn = deviceData.voltage_light > 0.2;
-  // const isRelayOn = deviceData.current < 5;
-
-  // Dữ liệu card với icon và màu nền
   const cards = [
     {
       title: "Nhiệt độ",
-      value: `${telemetry.temperature ?? "..."} °C`,
+      value: telemetry.temperature,
+      unit: "°C",
+      key: "temperature",
       icon: "thermometer",
-      color: "#FF3B30",
-      backgroundImage: require("../../assets/temp.jpg"),
+      backgroundColor: "#F5A623",
     },
     {
       title: "Độ ẩm",
-      value: `${telemetry.humidity ?? "..."} %`,
+      value: telemetry.humidity,
+      unit: "%",
+      key: "humidity",
       icon: "tint",
-      color: "#00C7BE",
-      backgroundImage: require("../../assets/humid.jpg"),
+      backgroundColor: "#4A90E2",
     },
     {
       title: "Hiệu điện thế ánh sáng",
-      value: `${telemetry.voltage_light ?? "..."} V`,
+      value: telemetry.voltage_light,
+      unit: "V",
+      key: "voltage_light",
       icon: "lightbulb-o",
-      color: "#FF6D6A",
-      backgroundImage: require("../../assets/von3.jpg"),
+      backgroundColor: "#7ED321",
     },
     {
       title: "Dòng điện",
-      value: `${telemetry.current ?? "..."} A`,
+      value: telemetry.current,
+      unit: "A",
+      key: "current",
       icon: "flash",
-      color: "#5856D6",
-      backgroundImage: require("../../assets/dien3.jpg"),
+      backgroundColor: "#FF3333",
     },
   ];
+
+  const handleCardPress = (card) => {
+    navigation.navigate("Sensor", {
+      sensorKey: card.key,
+      sensorTitle: card.title,
+      sensorUnit: card.unit,
+      sensorHistory: telemetryHistory[card.key] || [],
+      token: token,
+    });
+  };
 
   return (
     <View style={[styles.container, currentStyles.container]}>
@@ -193,7 +219,7 @@ export default function DetailedSpecification({ navigation }) {
           />
         </TouchableOpacity>
         <Text style={[styles.title, currentStyles.text]}>
-          Thông số chi tiết
+          Theo dõi cảm biến
         </Text>
         <TouchableOpacity onPress={() => navigation.navigate("Notification")}>
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
@@ -202,23 +228,22 @@ export default function DetailedSpecification({ navigation }) {
 
       <ScrollView contentContainerStyle={styles.cardContainer}>
         {cards.map((card, index) => (
-          <ImageBackground
+          <TouchableOpacity
             key={index}
-            source={card.backgroundImage}
-            imageStyle={{ borderRadius: 15 }}
-            style={[styles.card, currentStyles.card]}
+            onPress={() => handleCardPress(card)}
+            style={[styles.card, { backgroundColor: card.backgroundColor }]}
           >
-            <View style={styles.overlay}>
+            <View style={styles.cardHeader}>
+              <Text style={styles.cardTitle}>{card.title}</Text>
               <FontAwesome
                 name={card.icon}
-                size={40}
+                size={20}
                 color="#fff"
                 style={styles.cardIcon}
               />
-              <Text style={styles.cardTitle}>{card.title}</Text>
-              <Text style={styles.cardValue}>{card.value}</Text>
             </View>
-          </ImageBackground>
+            <Text style={styles.cardValue}>{`${card.value || "..."}${card.unit}`}</Text>
+          </TouchableOpacity>
         ))}
       </ScrollView>
 
@@ -263,46 +288,36 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 15,
-  },
   cardContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    paddingBottom: 80,
+  },
+  card: {
+    width: "100%",
+    height: 150,
+    borderRadius: 15,
+    marginBottom: 15,
+    padding: 20,
     justifyContent: "space-between",
   },
-  // card: {
-  //   width: "48%",
-  //   aspectRatio: 1,
-  //   borderRadius: 15,
-  //   padding: 15,
-  //   marginBottom: 15,
-  //   alignItems: "center",
-  //   justifyContent: "center",
-  // },
-  cardIcon: {
-    marginBottom: 10,
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   cardTitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: "600",
     color: "#fff",
-    textAlign: "center",
-    marginBottom: 5,
+  },
+  cardIcon: {
+    marginLeft: 10,
   },
   cardValue: {
-    fontSize: 16,
+    fontSize: 50,
     fontWeight: "bold",
     color: "#fff",
     textAlign: "center",
-  },
-  cardSubValue: {
-    fontSize: 12,
-    color: "#fff",
-    textAlign: "center",
-    marginTop: 5,
+    bottom: 10,
   },
   bottomNav: {
     flexDirection: "row",
@@ -323,25 +338,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 5,
   },
-  card: {
-    width: 175,
-    height: 180,
-    marginBottom: 15,
-    borderRadius: 15,
-    overflow: 'hidden',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
-  overlay: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    backgroundColor: 'rgba(0, 0, 0, 0.1)', // lớp overlay đen mờ
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  
 });
 
 const dayModeStyles = StyleSheet.create({
@@ -353,13 +349,6 @@ const dayModeStyles = StyleSheet.create({
   },
   text: {
     color: "black",
-  },
-  card: {
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5,
   },
   bottomNav: {
     backgroundColor: "black",
@@ -375,13 +364,6 @@ const nightModeStyles = StyleSheet.create({
   },
   text: {
     color: "white",
-  },
-  card: {
-    shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
-    elevation: 5,
   },
   bottomNav: {
     backgroundColor: "#333",

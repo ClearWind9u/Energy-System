@@ -46,7 +46,7 @@ export default function HomeScreen({ navigation, route }) {
     },
     {
       id: 2,
-      name: "Điều chỉnh mức tiêu thụ",
+      name: "Điều chỉnh thiết bị",
       // color: "#A4FF80", // Xanh lá
       icon: "cog",
       navigateTo: "Adjust",

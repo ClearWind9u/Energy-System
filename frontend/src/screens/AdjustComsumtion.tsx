@@ -302,7 +302,6 @@ fetchUserData();
         params: newValue,
         
       };
-
       const response = apiRequestWithToken
         ? await apiRequestWithToken(() =>
             axios.post(
@@ -326,8 +325,6 @@ fetchUserData();
               },
             }
           );
-
-      
 
       console.log(`Set ${device.name} to:`, newValue ? "On" : "Off");
       setDevices((prev) =>
@@ -357,7 +354,7 @@ fetchUserData();
         <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <FontAwesome name="arrow-left" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>
-        <Text style={[styles.title, currentStyles.text]}>Điều chỉnh mức tiêu thụ</Text>
+        <Text style={[styles.title, currentStyles.text]}>Điều chỉnh thiết bị</Text>
         <TouchableOpacity onPress={() => navigation.navigate("Notification")} >
           <FontAwesome name="bell" size={24} color={currentStyles.text.color} />
         </TouchableOpacity>

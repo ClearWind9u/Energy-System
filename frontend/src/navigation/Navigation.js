@@ -11,6 +11,7 @@ import AccountInfor from "../screens/AccountInfor";
 import ReportScreen from "../screens/ReportScreen";
 import ChartScreen from "../screens/ChartScreen";
 import Notification from "../screens/Notification";
+import SensorGraph from "../screens/SensorGraph";
 
 const Stack = createStackNavigator();
 
@@ -24,6 +25,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="Adjust" component={AdjustComsumption} />
           <Stack.Screen name="Detail" component={DetailedSpecification} />
+          <Stack.Screen name= "Sensor" component={SensorGraph} />
           <Stack.Screen name="DeviceManagement" component={DeviceManagement} />
           <Stack.Screen name="AccountInfor" component={AccountInfor} />
           <Stack.Screen name="Report" component={ReportScreen} />
