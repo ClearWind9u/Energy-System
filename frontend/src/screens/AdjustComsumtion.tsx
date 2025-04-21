@@ -22,7 +22,7 @@ export default function AdjustComsumption({ navigation, route }) {
     });
 
 // api getAllDeviceState
-  const apiURL = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D";
+  const apiURL = "https://app.coreiot.io/api/plugins/telemetry/DEVICE/8fb0b170-00ce-11f0-a887-6d1a184f2bb5/values/attributes/CLIENT_SCOPE?keys=switchState%5B0%5D%2CswitchState%5B1%5D%2CswitchState%5B2%5D%2CswitchState%5B3%5D%2CswitchState%5B4%5D%2CswitchState%5B5%5D%2CswitchState%5B6%5D";
 
   const getDeviceBackground = (name) => {
     const lower = name.toLowerCase();
@@ -40,6 +40,12 @@ export default function AdjustComsumption({ navigation, route }) {
     }
     if (lower.includes("sensor")) {
       return require("../../assets/SENSOR.jpg");
+    }
+    if (lower.includes("lcd")) {
+      return require("../../assets/tv.png");
+    }
+    if (lower.includes("buzzer")) {
+      return require("../../assets/buzzer.jpg");
     }
     return require("../../assets/appliance.jpg");
   };
@@ -105,10 +111,12 @@ export default function AdjustComsumption({ navigation, route }) {
         "switchState[0]": "Relay",
         "switchState[1]": "Fan",
         "switchState[2]": "LED",
+        "switchState[5]": "Buzzer",
+        "switchState[6]": "LCD",
       };
 
       const devices = response.data
-        .filter((item) => ["switchState[0]", "switchState[1]", "switchState[2]"].includes(item.key))
+        .filter((item) => ["switchState[0]", "switchState[1]", "switchState[2]", "switchState[5]", "switchState[6]"].includes(item.key))
         .map((item, index) => {
           const deviceName = deviceMap[item.key] || "Unknown Device";
           const { icon, iconFamily } = getDeviceIcon(deviceName);
@@ -130,6 +138,8 @@ export default function AdjustComsumption({ navigation, route }) {
       const state2 = response.data.find((item) => item.key === "switchState[2]")?.value;
       const state3 = response.data.find((item) => item.key === "switchState[3]")?.value;
       const state4 = response.data.find((item) => item.key === "switchState[4]")?.value;
+      const state5 = response.data.find((item) => item.key === "switchState[5]")?.value;// coi
+      const state6 = response.data.find((item) => item.key === "switchState[6]")?.value;// man hinh LCD
 
       setDevices(devices);
       setAreAllDevicesOn(state3 || false);
@@ -296,6 +306,8 @@ fetchUserData();
      if (device.name === "Fan" ){ deviceMethod = "setStateFan"; } 
      else if( device.name === "Relay" )  {deviceMethod = "setStateRelay"}
      else if( device.name === "LED") { deviceMethod = "setStateLedMatrix" }
+     else if( device.name === "Buzzer") { deviceMethod = "setStateBuzzer" }
+     else if( device.name === "LCD") { deviceMethod = "setStateLCD" }
 
       const payload = {
         method: deviceMethod,
@@ -394,7 +406,7 @@ fetchUserData();
       <ScrollView
         contentContainerStyle={styles.deviceList}
         showsVerticalScrollIndicator={false}
-        style={{ maxHeight: 660 }}
+        style={{ maxHeight: 700 }}
       >
         {devices.length === 0 && (
           <Text style={[styles.deviceName, currentStyles.text]}>Không có thiết bị nào</Text>

@@ -7,7 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-import Config from 'react-native-config';
+// import Config from 'react-native-config';
 import axios from "axios";
 export default function RegisterScreen({ navigation }) {
   const [fullName, setFullName] = useState("");
@@ -38,8 +38,9 @@ export default function RegisterScreen({ navigation }) {
         navigation.navigate("Login");
       }      
     } catch (error) {
-      console.log(error);
+      console.log("Lỗi đăng ký:", error.response?.data || error.message);
     }
+    
   };
   
   return (
@@ -72,7 +73,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="ID cụm"
-          keyboardType="phone-pad"
+          // keyboardType="phone-pad"
           value={idGroup}
           onChangeText={setIdGroup}
         />
@@ -84,7 +85,7 @@ export default function RegisterScreen({ navigation }) {
         <TextInput
           style={styles.input}
           placeholder="Tên tài khoản"
-          keyboardType="account-address"
+          // keyboardType="account-address"
           value={account}
           onChangeText={setEmail}
         />
