@@ -1,0 +1,400 @@
+// #include <Arduino.h>
+// #include <Adafruit_NeoPixel.h>
+// #include <DHT20.h>
+// #include"fsm_automatic.h"
+// #include"fsm_manual.h"
+#include"global.h"
+// #define LED_PIN     32   
+// #define LED_COUNT   4    
+// #define BUTTON_PIN  35   // Chân GPIO của nút nhấn
+
+// Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+// bool isYellow = false;  // Mặc định bắt đầu với đèn ĐỎ
+// bool lastButtonState = HIGH; // Trạng thái trước đó của nút nhấn
+// // LED RGB
+// void setAllLEDs(uint32_t color) {
+//     for (int i = 0; i < strip.numPixels(); i++) {
+//         strip.setPixelColor(i, color);
+//     }
+//     strip.show();
+// }
+// void TaskTemperature_Humidity(void *pvParameters){
+//     DHT20 dht20;
+//     Wire.begin(GPIO_NUM_21, GPIO_NUM_22);
+//     dht20.begin();
+//     while(1){
+//       dht20.read();
+//       double temperature = dht20.getTemperature();
+//       double humidity = dht20.getHumidity();
+  
+//       Serial.print("Temp: "); Serial.print(temperature); Serial.print(" *C ");
+//       Serial.print(" Humidity: "); Serial.print(humidity); Serial.print(" %");
+//       Serial.println();
+      
+//       vTaskDelay(5000);
+//     }
+  
+//   }
+// void setup() {
+//     Serial.begin(9600);
+//     // LED RGB
+//     strip.begin();
+//     strip.show();
+//     pinMode(BUTTON_PIN, INPUT_PULLUP);  // Kích hoạt pull-up để tránh nhiễu
+//     Serial.println("WS2812 RGB LED đã sẵn sàng!");
+//     setAllLEDs(strip.Color(255, 0, 0)); // Bắt đầu với đèn ĐỎ
+//     // DHT_20
+//     xTaskCreate(TaskTemperature_Humidity, "DHT_20", 2048, NULL, 2, NULL);
+
+// }
+
+// void loop() {
+        
+// }
+
+
+
+// #define BUZZER_PIN 25
+
+// void setup() {
+//     pinMode(BUZZER_PIN, OUTPUT);
+// }
+
+// void loop() {
+//     // tone(BUZZER_PIN, 1000); // Phát âm 1kHz
+//     // delay(1000);
+//     noTone(BUZZER_PIN); // Dừng âm thanh
+//     delay(1000);
+// }
+
+// #define LED_PIN 4  // Chân GPIO2 trên ESP32 (có sẵn LED trên board)
+
+// void setup() {
+//     pinMode(LED_PIN, OUTPUT); // Cấu hình chân LED là OUTPUT
+// }
+
+// void loop() {
+//     digitalWrite(LED_PIN, HIGH); // Bật LED
+//     delay(500);                  // Chờ 500ms
+//     digitalWrite(LED_PIN, LOW);  // Tắt LED
+//     delay(500);                  // Chờ 500ms
+// }
+
+
+// #define LED_PIN 5     // Chân điều khiển LED RGB (P16 tương ứng với GPIO5)
+// #define NUM_LEDS 4    // Số lượng LED RGB
+
+// Adafruit_NeoPixel strip(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
+
+// void setup() {
+//     strip.begin();
+//     strip.show(); // Tắt tất cả LED ban đầu
+// }
+
+// void loop() {
+    // Bật tất cả LED thành màu xanh dương
+    // for(int i = 0; i < NUM_LEDS; i++) {
+    //     strip.setPixelColor(i, strip.Color(0, 0, 255)); // Màu xanh dương
+    // }
+    // strip.show();
+    // delay(1000);
+
+     // Tắt tất cả LED
+    // for(int i = 0; i < NUM_LEDS; i++) {
+    //     strip.setPixelColor(i, strip.Color(0, 0, 0)); // Tắt
+    // }
+    // strip.show();
+    // delay(1000);
+//     strip.setPixelColor(0, strip.Color(255, 0, 0)); 
+
+     // LED 2 (chỉ số 1) sáng XANH LÁ
+//     strip.setPixelColor(1, strip.Color(0, 255, 0)); 
+
+     // LED 3 (chỉ số 2) sáng XANH DƯƠNG
+//     strip.setPixelColor(2, strip.Color(0, 0, 255)); 
+
+     // LED 4 (chỉ số 3) sáng TRẮNG
+//     strip.setPixelColor(3, strip.Color(255, 255, 255)); 
+
+//     strip.show(); // Cập nhật LED
+// }
+
+// #define FAN_PIN 26  // Chân GPIO điều khiển quạt (P0)
+
+// void setup() {
+//     pinMode(FAN_PIN, OUTPUT);
+// }
+
+// void loop() {
+//   //  digitalWrite(FAN_PIN, 200); // Bật quạt
+//    // delay(5000);  // Chạy 5 giây
+
+//     digitalWrite(FAN_PIN, 0);  // Tắt quạt
+//   //  delay(5000);  // Nghỉ 5 giây
+// }
+// #include <Wire.h>                // Thư viện giao tiếp I2C
+// #include <LiquidCrystal_I2C.h>   // Thư viện điều khiển LCD I2C
+
+// // Khởi tạo LCD với địa chỉ I2C 0x27 hoặc 0x3F
+// LiquidCrystal_I2C lcd(0x21, 16, 2);  
+
+// void setup() {
+//     Wire.begin(22, 21);  // Khởi tạo I2C với SDA = GPIO 22, SCL = GPIO 21
+//     lcd.init();          // Khởi tạo màn hình LCD
+//     lcd.backlight();     // Bật đèn nền LCD
+
+//     // Hiển thị nội dung lên màn hình
+//     lcd.setCursor(0, 0); // Đặt con trỏ ở dòng đầu tiên
+//     lcd.print("Trang thai: OK");  // Hiển thị trạng thái thiết bị
+
+//     lcd.setCursor(0, 1); // Đặt con trỏ ở dòng thứ hai
+//     lcd.print("Muc tieu thu: 1W"); // Hiển thị mức tiêu thụ điện
+// }
+
+// void loop() {
+//     // Chương trình không làm gì thêm trong loop
+// }
+
+// #include <Wire.h>                // Thư viện giao tiếp I2C
+// #include <LiquidCrystal_I2C.h>   // Thư viện điều khiển LCD I2C
+
+// // Khởi tạo LCD với địa chỉ I2C 0x27 hoặc 0x3F
+// LiquidCrystal_I2C lcd(0x21, 16, 2);  
+
+// void setup() {
+//     Wire.begin(21, 22);  // Khởi tạo I2C với SDA = GPIO 22, SCL = GPIO 21
+//     lcd.init();          // Khởi tạo màn hình LCD
+//     lcd.backlight();     // Bật đèn nền LCD
+
+//     // Hiển thị nội dung lên màn hình
+//     lcd.setCursor(0, 0); // Đặt con trỏ ở dòng đầu tiên
+//     lcd.print("Trang thai: OK");  // Hiển thị trạng thái thiết bị
+
+//     lcd.setCursor(0, 1); // Đặt con trỏ ở dòng thứ hai
+//     lcd.print("Muc tieu thu: 1W"); // Hiển thị mức tiêu thụ điện
+// }
+
+// void loop() {
+//     // Chương trình không làm gì thêm trong loop
+// }
+
+
+// #include <Arduino.h>
+
+// #define LIGHT_SENSOR_PIN 27  // P0 tương ứng với GPIO 32
+
+// void setup() {
+//     Serial.begin(115200);  // Khởi động Serial Monitor
+//     pinMode(LIGHT_SENSOR_PIN, INPUT);  // Đặt chân cảm biến là đầu vào
+// }
+
+// void loop() {
+//     double lightValue = analogRead(LIGHT_SENSOR_PIN);  // Đọc giá trị analog
+//     double voltage_light = (lightValue*5)/4095;
+//     Serial.print("Gia tri dien ap anh sang: ");
+//     Serial.println(voltage_light);  // In giá trị lên Serial Monitor
+    
+//     delay(1000);  // Đợi 1 giây trước khi đọc lại
+// }
+
+// #define PUMP_CONTROL 32  // Chân điều khiển công tắc USB (GPIO32)
+
+// void setup() {
+//     pinMode(PUMP_CONTROL, OUTPUT); // Đặt chân P0 là OUTPUT
+// }
+
+// void loop() {
+//     // digitalWrite(PUMP_CONTROL, HIGH);  // Bật bơm
+//     // delay(5000);  // Chạy bơm trong 5 giây
+
+//     digitalWrite(PUMP_CONTROL, LOW);   // Tắt bơm
+//     delay(5000);  // Dừng bơm trong 5 giây
+// }
+
+
+// #define RELAY_PIN 32  // Chân kết nối với relay
+
+// void setup() {
+//     pinMode(RELAY_PIN, OUTPUT);
+// }
+
+// void loop() {
+//    //  digitalWrite(RELAY_PIN, HIGH); // Bật relay
+//   //  delay(5000); // Chờ 5 giây
+//     digitalWrite(RELAY_PIN, LOW);  // Tắt relay
+//    // delay(5000); // Chờ 5 giây trước khi lặp lại
+// }
+
+
+// #define ACS712_PIN 33  // Chân kết nối Vout của ACS712
+// #define VCC 5
+// #define SENSOR_SENSITIVITY 0.1
+// #define ADC_RESOLUTION 4095.0
+// void setup() {
+//     Serial.begin(115200);
+// }
+
+// void loop() {
+//     double sensorValue = analogRead(ACS712_PIN); // Đọc giá trị cảm biến
+//     double voltage = sensorValue * (VCC / ADC_RESOLUTION); // Chuyển đổi sang điện áp (ESP32 dùng ADC 12-bit)
+//     double current = abs((voltage-(VCC/2))/SENSOR_SENSITIVITY);
+//     Serial.print("Curent: ");
+//    // Serial.print(sensorValue);
+//     Serial.print(current);
+//     Serial.println(" A");
+//     delay(1000); // Đọc giá trị mỗi giây
+// }
+
+
+// #include <Arduino.h>
+
+// #define ACS712_PIN 33  // Chân ADC đọc tín hiệu ACS712
+// #define RELAY_PIN 32   // Chân điều khiển relay
+// #define VCC 5        // Điện áp cấp cho ACS712 (thay thành 5.0 nếu cấp 5V)
+// #define ADC_RESOLUTION 4095.0  // Độ phân giải ADC 12-bit
+// #define SENSOR_SENSITIVITY 0.1  // Độ nhạy (ACS712-05A: 185mV/A)
+// #define LIGHT_SENSOR_PIN 27  // P0 tương ứng với GPIO 32
+// #define FAN_PIN 26
+
+// void setup() {
+//     Serial.begin(115200);
+//     pinMode(RELAY_PIN, OUTPUT);
+//     digitalWrite(RELAY_PIN, HIGH); // Mặc định bật relay (bình thường tải chạy)
+//       pinMode(LIGHT_SENSOR_PIN, INPUT);
+//       pinMode(FAN_PIN, OUTPUT);
+// }
+
+// void loop() {
+//     // Đọc giá trị ADC
+//     double sensorValue = analogRead(ACS712_PIN);
+//     double voltage = sensorValue * (VCC / ADC_RESOLUTION);  // Chuyển đổi sang điện áp
+//     double current = abs((voltage - (VCC / 2)) / SENSOR_SENSITIVITY);  // Tính dòng điện
+//     double lightValue = analogRead(LIGHT_SENSOR_PIN);  // Đọc giá trị analog
+//     double voltage_light = (lightValue*VCC)/ADC_RESOLUTION;
+//     Serial.print("Gia tri dien ap anh sang: ");
+//     Serial.println(voltage_light);  // In giá trị lên Serial Monitor
+//     Serial.print("Voltage: ");
+//     Serial.print(voltage);
+//     Serial.println(" V ");
+//     Serial.print("Current: ");
+//     Serial.print(current);
+//     Serial.println(" A");
+
+//     // Kiểm tra nếu dòng điện vượt quá 5A
+//     if (current < 5.0) {
+//         digitalWrite(RELAY_PIN, HIGH);  // Bật relay (tải hoạt động)
+//         Serial.println("Relay ON - Normal operation");
+//     } 
+//     if(voltage_light>0.2){
+//         digitalWrite(FAN_PIN, 255);
+//     }
+//     if(voltage_light<=0.2){
+//         digitalWrite(FAN_PIN, 0);
+//     }
+//     if(current >= 5.0){
+//         digitalWrite(RELAY_PIN, LOW);   // Ngắt relay (tải tắt)
+//         Serial.println("Relay OFF - Overcurrent detected!");
+//     }
+//     delay(5000);  // Đọc giá trị mỗi giây
+// }
+
+
+// #define BUTTON_PIN 14  // Chân nút nhấn
+// #define FAN_PIN 26     // Chân điều khiển quạt
+
+// bool fanState = false; // Trạng thái quạt
+// bool lastButtonState = HIGH;
+// unsigned long lastDebounceTime = 0;
+// const unsigned long debounceDelay = 50;
+
+// void setup() {
+//     pinMode(BUTTON_PIN, INPUT_PULLUP);  // Kéo lên để tránh nhiễu
+//     pinMode(FAN_PIN, OUTPUT);
+//     digitalWrite(FAN_PIN, 0); // Ban đầu quạt tắt
+// }
+
+// void loop() {
+//     bool currentButtonState = digitalRead(BUTTON_PIN);
+    
+//     if (currentButtonState == LOW && lastButtonState == HIGH) {
+//         if (millis() - lastDebounceTime > debounceDelay) {
+//             fanState = !fanState;  // Đảo trạng thái quạt
+//             digitalWrite(FAN_PIN, fanState ? 255 : 0);
+//             lastDebounceTime = millis();
+//         }
+//     }
+    
+//     lastButtonState = currentButtonState;
+// }
+
+
+// #define BUTTON_PIN 14  // Chân nút nhấn
+// #define RELAY_PIN 32   // Chân điều khiển relay
+
+// bool relayState = false; // Trạng thái relay
+// bool lastButtonState = HIGH;
+// unsigned long lastDebounceTime = 0;
+// const unsigned long debounceDelay = 50;
+
+// void setup() {
+//     pinMode(BUTTON_PIN, INPUT_PULLUP);  // Kéo lên để tránh nhiễu
+//     pinMode(RELAY_PIN, OUTPUT);
+//     digitalWrite(RELAY_PIN, HIGH); // Ban đầu relay tắt
+// }
+
+// void loop() {
+//     bool currentButtonState = digitalRead(BUTTON_PIN);
+    
+//     if (currentButtonState == LOW && lastButtonState == HIGH) {
+//         if (millis() - lastDebounceTime > debounceDelay) {
+//             relayState = !relayState;  // Đảo trạng thái relay
+//             digitalWrite(RELAY_PIN, relayState ? HIGH : LOW);
+//             lastDebounceTime = millis();
+//         }
+//     }
+    
+//     lastButtonState = currentButtonState;
+// }
+// LiquidCrystal_I2C lcd(0x21, 16, 2);  
+
+// void setup() {
+//     Wire.begin(22, 21);  // Khởi tạo I2C với SDA = GPIO 22, SCL = GPIO 21
+//     lcd.init();          // Khởi tạo màn hình LCD
+//     lcd.backlight();     // Bật đèn nền LCD
+
+//     // Hiển thị nội dung lên màn hình
+//     lcd.setCursor(0, 0); // Đặt con trỏ ở dòng đầu tiên
+//     lcd.print("Trang thai: OK");  // Hiển thị trạng thái thiết bị
+
+//     lcd.setCursor(0, 1); // Đặt con trỏ ở dòng thứ hai
+//     lcd.print("Muc tieu thu: 1W"); // Hiển thị mức tiêu thụ điện
+// }
+
+
+
+Ticker buttonTicker;
+ //LiquidCrystal_I2C lcd(0x21, 16, 2);
+void setup() {
+      Wire.begin(21, 22);  // Khởi tạo I2C với SDA = GPIO 22, SCL = GPIO 21
+    lcd.init();          // Khởi tạo màn hình LCD
+    lcd.backlight();     // Bật đèn nền LCD
+        strip.begin();
+    strip.show(); // Tắt tất cả LED ban đầu
+  buttonTicker.attach_ms(10, checkButtons);
+    Serial.begin(115200);
+    for (int i = 0; i < NUM_BUTTONS; i++) {
+      pinMode(buttonPins[i], INPUT_PULLUP);
+      pinMode(devicePins[i], OUTPUT);
+  }
+  status=INIT;
+    pinMode(RELAY_PIN, OUTPUT);
+    digitalWrite(RELAY_PIN, HIGH); // Mặc định bật relay (bình thường tải chạy)
+      pinMode(LIGHT_SENSOR_PIN, INPUT);
+      pinMode(FAN_PIN, OUTPUT);
+}
+
+void loop(){
+   fsm_automatic();
+   fsm_manual();
+}

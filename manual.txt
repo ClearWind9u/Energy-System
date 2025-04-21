@@ -1,0 +1,55 @@
+#include"global.h"
+
+void fsm_manual(){
+switch (status)
+{
+case RELAY_MANUAL:
+    LED_RGB_COLOR_CHANGE(0,255,0);
+    if(isButtonPressed(0)==1){
+        status=FAN_MANUAL;
+    }
+    else if(isButtonPressed(1)==1){
+        relayStates[0]=!relayStates[0];
+        if(Charger_States=="ON") Charger_States="OFF";
+        else {
+            Charger_States="ON";
+            lcd.setCursor(13,0);
+            lcd.print("  ");
+        }
+        digitalWrite(RELAY_PIN,relayStates[0]);
+        lcd_print_phone_charger(Charger_States);
+        
+    }
+    else{
+        digitalWrite(RELAY_PIN,relayStates[0]);
+        lcd_print_phone_charger(Charger_States);
+        
+    }
+    break;
+case FAN_MANUAL:
+    LED_RGB_COLOR_CHANGE(0,0,255);
+    if(isButtonPressed(0)==1){
+      status=AUTOMATIC;
+    }
+    else if(isButtonPressed(1)==1){
+        relayStates[1]=!relayStates[1];
+        if(Fan_States=="ON") Fan_States="OFF";
+        else { 
+            Fan_States="ON";
+            lcd.setCursor(13,1);
+            lcd.print(" ");
+        }
+        digitalWrite(FAN_PIN,relayStates[1]);
+        lcd_print_fan(Fan_States);
+        
+    }
+    else{
+        digitalWrite(FAN_PIN,relayStates[1]);
+        lcd_print_fan(Fan_States);
+        
+    }
+    break;
+default:
+    break;
+}
+}

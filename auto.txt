@@ -1,0 +1,87 @@
+#include"global.h"
+
+  
+const unsigned long sampleInterval = 5000;  // 5 giây
+unsigned long previousMillis = millis() - sampleInterval; // Đảm bảo chạy ngay từ đầu
+//unsigned long previousMillis = 0;
+void fsm_automatic(){
+    unsigned long currentMillis = millis();
+    switch (status)
+    {
+    case INIT:
+    relayStates[0]=HIGH;
+    relayStates[1]=LOW;
+    Charger_States="ON";
+    Fan_States="OFF";
+    
+      status=AUTOMATIC;
+        break;
+    case AUTOMATIC:
+    LED_RGB_COLOR_CHANGE(255,0,0);
+    // Kiểm tra nếu dòng điện vượt quá 5A
+    if(isButtonPressed(0)==1){
+        status=RELAY_MANUAL;
+      //  lcd_print_phone_charger();
+      //  lcd_print_fan();
+    }
+    else{
+       // lcd_print_phone_charger();
+       // lcd_print_fan();
+    if (currentMillis - previousMillis >= sampleInterval) {
+        previousMillis = currentMillis; 
+
+    double sensorValue = analogRead(ACS712_PIN);
+    double voltage = sensorValue * (VCC / ADC_RESOLUTION);  // Chuyển đổi sang điện áp
+     current = abs((voltage - (VCC / 2)) / SENSOR_SENSITIVITY);  // Tính dòng điện
+    double lightValue = analogRead(LIGHT_SENSOR_PIN);  // Đọc giá trị analog
+     voltage_light = (lightValue*VCC)/ADC_RESOLUTION;
+    Serial.print("Gia tri dien ap anh sang: ");
+    Serial.println(voltage_light);  // In giá trị lên Serial Monitor
+    Serial.print("Voltage: ");
+    Serial.print(voltage);
+    Serial.println(" V ");
+    Serial.print("Current: ");
+    Serial.print(current);
+    Serial.println(" A");
+
+    if (current < 5.0) {
+        relayStates[0]=HIGH;
+        digitalWrite(RELAY_PIN, HIGH);  // Bật relay (tải hoạt động)
+        Charger_States="ON";
+        lcd.setCursor(13,0);
+        lcd.print("  ");
+        lcd_print_phone_charger(Charger_States);
+        
+        Serial.println("Relay ON - Normal operation");
+    } 
+    if(voltage_light>0.2){
+        relayStates[1]=255;
+        digitalWrite(FAN_PIN, 255);
+        Fan_States="ON";
+        lcd.setCursor(13,1);
+        lcd.print(" ");
+        lcd_print_fan(Fan_States);
+        
+    }
+    if(voltage_light<=0.2){
+        relayStates[1]=0;
+        digitalWrite(FAN_PIN, 0);
+        Fan_States="OFF";
+        lcd_print_fan(Fan_States);
+        
+    }
+    if(current >= 5.0){
+        relayStates[0]=LOW;
+        digitalWrite(RELAY_PIN, LOW);   // Ngắt relay (tải tắt)
+        Charger_States="OFF";
+        lcd_print_phone_charger(Charger_States);
+        
+        Serial.println("Relay OFF - Overcurrent detected!");
+    }
+    }
+}
+        break;
+    default:
+        break;
+    }
+}
