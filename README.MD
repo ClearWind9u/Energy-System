@@ -110,6 +110,7 @@ project-root/
 │   ├── package.json          # Cấu hình backend
 │   ├── .env                  # File cấu hình môi trường
 ```
+- Nhánh **COREIOT** chứa source code IoT của nhóm.
 
 ## ⚠️ Lưu ý
 - Đảm bảo **Node.js v20.14.0** được cài đặt đúng.
